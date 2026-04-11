@@ -210,14 +210,39 @@ def get_dream(dream_id):
 
 
 @dreams_bp.route('/api/dreams/<int:dream_id>', methods=['DELETE'])
+@require_auth
 def delete_dream(dream_id):
-    """Delete a dream by ID."""
+    """Delete a dream by ID for the authenticated user."""
+    user = request.current_user
+    dream = Dream.get_by_id(dream_id)
+
+    if not dream or dream.user_id != user.id:
+        return jsonify({'error': 'Dream not found or unauthorized'}), 404
+
     deleted = Dream.delete(dream_id)
     
     if not deleted:
         return jsonify({'error': 'Dream not found'}), 404
     
     return jsonify({'message': 'Dream deleted successfully'})
+
+
+@dreams_bp.route('/api/dreams/<int:dream_id>/jungian-report', methods=['DELETE'])
+@require_auth
+def delete_jungian_report(dream_id):
+    """Delete only the Jungian analysis report for a dream."""
+    user = request.current_user
+    dream = Dream.get_by_id(dream_id)
+
+    if not dream or dream.user_id != user.id:
+        return jsonify({'error': 'Dream not found or unauthorized'}), 404
+
+    deleted = Dream.clear_jungian_report(dream_id, user.id)
+
+    if not deleted:
+        return jsonify({'error': 'Failed to delete Jungian analysis'}), 500
+
+    return jsonify({'message': 'Jungian analysis deleted successfully'})
 
 
 @dreams_bp.route('/api/dreams/recent', methods=['GET'])

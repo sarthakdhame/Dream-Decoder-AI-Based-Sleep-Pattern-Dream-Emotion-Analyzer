@@ -162,6 +162,22 @@ class Dream:
             
             conn.commit()
             return deleted
+
+    @staticmethod
+    def clear_jungian_report(dream_id, user_id):
+        """Remove the Jungian report from a dream owned by the given user."""
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+
+            cursor.execute('''
+                UPDATE dreams
+                SET jungian_report=?
+                WHERE id=? AND user_id=?
+            ''', (json.dumps({}), dream_id, user_id))
+
+            updated = cursor.rowcount > 0
+            conn.commit()
+            return updated
     
     @staticmethod
     def get_recent(user_id, days=7):

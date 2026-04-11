@@ -1818,6 +1818,7 @@ function handleJungianTab() {
                             <span>Dream: ${escapeHtml(dateLabel || 'Unknown date')}</span>
                             <span>Provider: ${escapeHtml(provider)}</span>
                             ${generatedLabel ? `<span>Generated: ${escapeHtml(generatedLabel)}</span>` : ''}
+                            <button type="button" class="btn-delete jungian-delete-btn" aria-label="Delete Jungian analysis for this dream" title="Delete Jungian analysis">🗑️</button>
                         </div>
                         <div class="jungian-dream-preview">${escapeHtml((dream.content || '').slice(0, 180))}${(dream.content || '').length > 180 ? '...' : ''}</div>
                         <div class="jungian-report-preview">${escapeHtml(previewText)}</div>
@@ -1828,6 +1829,30 @@ function handleJungianTab() {
 
             const items = Array.from(contentDiv.querySelectorAll('.jungian-journal-item'));
             items.forEach((item) => {
+                const dreamId = item.dataset.dreamId;
+                const deleteBtn = item.querySelector('.jungian-delete-btn');
+
+                if (deleteBtn) {
+                    deleteBtn.addEventListener('click', async (event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+
+                        const confirmed = window.confirm('Delete this Jungian analysis? The dream entry will stay.');
+                        if (!confirmed) return;
+
+                        try {
+                            deleteBtn.disabled = true;
+                            await deleteJungianReport(dreamId);
+                            showToast('success', 'Jungian analysis deleted successfully.');
+                            await loadStoredReports();
+                        } catch (error) {
+                            console.error('Failed to delete Jungian analysis:', error);
+                            showToast('error', `Failed to delete Jungian analysis: ${error.message}`);
+                            deleteBtn.disabled = false;
+                        }
+                    });
+                }
+
                 const toggleItem = () => {
                     const isActive = item.classList.contains('expanded');
 

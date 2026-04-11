@@ -95,7 +95,7 @@ if errorlevel 1 (
     echo ERROR: Failed to install dependencies.
     echo TIP: If you see "File name too long" errors:
     echo 1. Run PowerShell as Administrator
-    echo 2. Execute: .\fix_long_paths.ps1
+    echo 2. Execute: .\scripts\maintenance\fix_long_paths.ps1
     echo 3. Restart this setup.
     pause
     exit /b 1

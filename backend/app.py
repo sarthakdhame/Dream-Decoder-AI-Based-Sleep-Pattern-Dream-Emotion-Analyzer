@@ -12,8 +12,8 @@ from flask import Flask, send_from_directory, jsonify, request
 from flask_cors import CORS
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from .env and let local edits win during development.
+load_dotenv(override=True)
 
 from backend.config import DEBUG, HOST, PORT, CORS_ORIGINS
 from backend.database.db import init_db

@@ -14,15 +14,28 @@ except ImportError:
     print("WARNING: google-generativeai not installed. Jungian analysis will be disabled.")
 
 # Load environment variables
-load_dotenv()
+load_dotenv(override=True)
 
-# Configure Gemini API
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 PLACEHOLDER_KEYS = {"your_gemini_api_key_here", "", None}
+MODEL_CANDIDATES = ("gemini-2.5-flash", "gemini-1.5-flash", "gemini-1.5-pro")
 
-if HAS_GEMINI and GEMINI_API_KEY and GEMINI_API_KEY not in PLACEHOLDER_KEYS:
-    genai.configure(api_key=GEMINI_API_KEY)
-elif not GEMINI_API_KEY or GEMINI_API_KEY in PLACEHOLDER_KEYS:
+
+def _get_gemini_key():
+    """Read the current Gemini API key from environment variables."""
+    load_dotenv(override=True)
+    return os.getenv("GEMINI_API_KEY")
+
+
+def _configure_gemini(key):
+    """Configure the Gemini client if the key is usable."""
+    if HAS_GEMINI and key and key not in PLACEHOLDER_KEYS:
+        genai.configure(api_key=key)
+        return True
+    return False
+
+
+GEMINI_API_KEY = _get_gemini_key()
+if not _configure_gemini(GEMINI_API_KEY):
     print("WARNING: GEMINI_API_KEY not found in environment variables.")
 
 def analyze_jungian(dream_text):
@@ -33,7 +46,14 @@ def analyze_jungian(dream_text):
         return {
             "error": "Google Generative AI library is not installed. Please run setup.bat to install it."
         }
-        
+
+    global GEMINI_API_KEY
+    GEMINI_API_KEY = _get_gemini_key()
+    if not _configure_gemini(GEMINI_API_KEY):
+        return {
+            "error": "Gemini API key not configured. Add a valid GEMINI_API_KEY to .env and restart the server."
+        }
+
     if not GEMINI_API_KEY or GEMINI_API_KEY in PLACEHOLDER_KEYS:
         return {
             "error": "Gemini API key not configured. Add a valid GEMINI_API_KEY to .env and restart the server."
@@ -45,9 +65,6 @@ def analyze_jungian(dream_text):
         }
 
     try:
-        # Initialize the model
-        model = genai.GenerativeModel('gemini-2.5-flash')
-        
         # Structured prompt as requested
         prompt = f"""Analyze the following dream using Jungian Psychology. 
 Focus on:
@@ -69,17 +86,34 @@ Sections:
 3. Emotional Insight: [Your analysis here]
 4. Personal Growth Message: [Your analysis here]
 """
-        
-        # Generate content
-        response = model.generate_content(prompt)
-        
-        if not response.text:
-            return {"error": "Received empty response from Gemini API."}
-            
-        return {
-            "analysis": response.text,
-            "provider": "Google Gemini"
-        }
+
+        last_error = None
+        for model_name in MODEL_CANDIDATES:
+            try:
+                model = genai.GenerativeModel(model_name)
+                response = model.generate_content(prompt)
+
+                if not response.text:
+                    return {"error": "Received empty response from Gemini API."}
+
+                return {
+                    "analysis": response.text,
+                    "provider": f"Google Gemini ({model_name})"
+                }
+            except Exception as model_error:
+                last_error = model_error
+                error_text = str(model_error).lower()
+
+                if any(token in error_text for token in ("429", "quota", "exhausted")):
+                    raise
+
+                if any(token in error_text for token in ("404", "not found", "permission denied", "403", "access denied", "model")):
+                    continue
+
+                raise
+
+        if last_error is not None:
+            raise last_error
         
     except Exception as e:
         error_msg = str(e).lower()
@@ -98,6 +132,16 @@ Sections:
             return {
                 "analysis": fallback_text,
                 "provider": "Fallback (API Quota Exceeded)"
+            }
+
+        if any(token in error_msg for token in ("403", "permission denied", "access denied", "api key not valid", "unauthorized")):
+            return {
+                "error": "Gemini API key is invalid or does not have access to the requested model. Try a valid Google AI Studio key and restart the server."
+            }
+
+        if any(token in error_msg for token in ("404", "not found", "model")):
+            return {
+                "error": f"Gemini model unavailable for this key. Tried: {', '.join(MODEL_CANDIDATES)}"
             }
             
         print(f"ERROR in Jungian Analysis: {str(e)}")

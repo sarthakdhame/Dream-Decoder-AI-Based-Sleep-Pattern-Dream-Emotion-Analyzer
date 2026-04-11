@@ -494,6 +494,14 @@ function renderSleepSentimentChart(dreams = [], sleepByDate = {}) {
                 pointHoverRadius: 7,
             }]
         },
+        layout: {
+            padding: {
+                left: 18,
+                right: 8,
+                top: 8,
+                bottom: 8
+            }
+        },
         options: {
             responsive: true,
             maintainAspectRatio: false,
@@ -518,7 +526,13 @@ function renderSleepSentimentChart(dreams = [], sleepByDate = {}) {
                 y: {
                     min: -1,
                     max: 1,
-                    title: { display: true, text: 'Sentiment Score (-1 to 1)', color: '#4fd1ff' },
+                    title: {
+                        display: true,
+                        text: 'Dream Sentiment',
+                        color: '#4fd1ff',
+                        font: { size: 12, weight: '600' },
+                        padding: { top: 10, bottom: 10 }
+                    },
                     grid: { color: 'rgba(167, 139, 250, 0.05)' }
                 }
             }

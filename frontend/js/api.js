@@ -108,6 +108,15 @@ async function deleteDream(id) {
 }
 
 /**
+ * Delete only the Jungian report for a dream
+ */
+async function deleteJungianReport(id) {
+    return apiRequest(`/api/dreams/${id}/jungian-report`, {
+        method: 'DELETE',
+    });
+}
+
+/**
  * Get recent dreams
  */
 async function getRecentDreams(days = 7) {
