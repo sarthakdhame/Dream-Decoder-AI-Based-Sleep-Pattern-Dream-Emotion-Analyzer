@@ -7,6 +7,11 @@
 let emotionChart = null;
 let sleepChart = null;
 let emotionPieChart = null;
+let sentimentMiniChart = null;
+let sleepMiniChart = null;
+let themesChart = null;
+let dreamWeekdayChart = null;
+let sleepSentimentChart = null;
 
 // Emotion colors
 const EMOTION_COLORS = {
@@ -43,15 +48,17 @@ function renderEmotionChart(trendData) {
 
     // Create a dataset for each emotion
     allEmotions.forEach(emotion => {
+        const color = EMOTION_COLORS[emotion] || '#6b6980';
         datasets.push({
             label: capitalize(emotion),
             data: trendData.map(d => (d.emotions && d.emotions[emotion]) || 0),
-            borderColor: EMOTION_COLORS[emotion] || '#6b6980',
-            backgroundColor: `${EMOTION_COLORS[emotion] || '#6b6980'}33`,
+            borderColor: color,
+            backgroundColor: `${color}22`,
             fill: true,
             tension: 0.4,
-            pointRadius: 4,
+            pointRadius: 3,
             pointHoverRadius: 6,
+            borderWidth: 2,
         });
     });
 
@@ -136,8 +143,8 @@ function renderSleepChart(sleepData) {
                 {
                     label: 'Sleep Quality',
                     data: sleepData.map(d => d.quality),
-                    backgroundColor: 'rgba(167, 139, 250, 0.6)',
-                    borderColor: '#a78bfa',
+                    backgroundColor: 'rgba(0, 229, 255, 0.5)',
+                    borderColor: '#00e5ff',
                     borderWidth: 2,
                     borderRadius: 6,
                     yAxisID: 'y',
@@ -146,10 +153,12 @@ function renderSleepChart(sleepData) {
                     label: 'Hours Slept',
                     data: sleepData.map(d => d.duration),
                     type: 'line',
-                    borderColor: '#60a5fa',
-                    backgroundColor: 'rgba(96, 165, 250, 0.2)',
+                    borderColor: '#4fd1ff',
+                    backgroundColor: 'rgba(79, 209, 255, 0.16)',
                     fill: true,
                     tension: 0.4,
+                    pointRadius: 3,
+                    borderWidth: 2,
                     yAxisID: 'y1',
                 }
             ]
@@ -181,7 +190,7 @@ function renderSleepChart(sleepData) {
                     title: {
                         display: true,
                         text: 'Quality (1-10)',
-                        color: '#a78bfa'
+                        color: '#00e5ff'
                     },
                     grid: { color: 'rgba(167, 139, 250, 0.05)' }
                 },
@@ -193,7 +202,7 @@ function renderSleepChart(sleepData) {
                     title: {
                         display: true,
                         text: 'Hours',
-                        color: '#60a5fa'
+                        color: '#4fd1ff'
                     },
                     grid: { display: false }
                 },
@@ -224,7 +233,7 @@ function renderEmotionPieChart(emotionBreakdown) {
     const colors = Object.keys(emotionBreakdown).map(e => EMOTION_COLORS[e] || '#6b6980');
 
     const config = {
-        type: 'doughnut',
+        type: 'polarArea',
         data: {
             labels,
             datasets: [{
@@ -242,25 +251,7 @@ function renderEmotionPieChart(emotionBreakdown) {
                     position: 'right',
                     labels: {
                         boxWidth: 12,
-                        padding: 15,
-                        generateLabels: function (chart) {
-                            const data = chart.data;
-                            if (data.labels.length && data.datasets.length) {
-                                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
-                                return data.labels.map((label, i) => {
-                                    const value = data.datasets[0].data[i];
-                                    const percentage = Math.round((value / total) * 100);
-                                    return {
-                                        text: `${label} (${percentage}%)`,
-                                        fillStyle: data.datasets[0].backgroundColor[i],
-                                        strokeStyle: data.datasets[0].borderColor,
-                                        lineWidth: data.datasets[0].borderWidth,
-                                        index: i
-                                    };
-                                });
-                            }
-                            return [];
-                        }
+                        padding: 15
                     }
                 },
                 tooltip: {
@@ -279,8 +270,7 @@ function renderEmotionPieChart(emotionBreakdown) {
                         }
                     }
                 }
-            },
-            cutout: '60%',
+            }
         }
     };
 
@@ -289,6 +279,330 @@ function renderEmotionPieChart(emotionBreakdown) {
         emotionPieChart.update();
     } else {
         emotionPieChart = new Chart(ctx, config);
+    }
+}
+
+/**
+ * Render top themes as ranked horizontal bars
+ */
+function renderThemesChart(keywords = []) {
+    const ctx = document.getElementById('themes-chart');
+    const noteEl = document.getElementById('themes-chart-note');
+    if (!ctx) return;
+
+    const list = Array.isArray(keywords) ? keywords.slice(0, 10) : [];
+    if (!list.length) {
+        if (noteEl) noteEl.textContent = 'Record more dreams to see themes';
+        if (themesChart) {
+            themesChart.destroy();
+            themesChart = null;
+        }
+        return;
+    }
+
+    // Weighted by rank (top keyword gets highest score)
+    const labels = list.map((k) => String(k));
+    const values = list.map((_, i) => list.length - i);
+    if (noteEl) noteEl.textContent = `Showing top ${list.length} themes ranked by frequency`;
+
+    const config = {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [{
+                label: 'Theme Weight',
+                data: values,
+                backgroundColor: labels.map((_, i) => i < 3 ? 'rgba(0, 229, 255, 0.7)' : 'rgba(79, 209, 255, 0.45)'),
+                borderColor: labels.map(() => '#00e5ff'),
+                borderWidth: 1.5,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(26, 24, 37, 0.95)',
+                    titleColor: '#f1f0f5',
+                    bodyColor: '#a8a6b8'
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 },
+                    grid: { color: 'rgba(167, 139, 250, 0.05)' }
+                },
+                y: {
+                    grid: { display: false }
+                }
+            }
+        }
+    };
+
+    if (themesChart) {
+        themesChart.data = config.data;
+        themesChart.update();
+    } else {
+        themesChart = new Chart(ctx, config);
+    }
+}
+
+/**
+ * Render dream activity distribution across weekdays
+ */
+function renderDreamWeekdayChart(dreams = []) {
+    const ctx = document.getElementById('dream-weekday-chart');
+    if (!ctx) return;
+
+    const dayLabels = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const counts = [0, 0, 0, 0, 0, 0, 0];
+
+    dreams.forEach((dream) => {
+        const raw = dream.created_at || dream.date;
+        const date = new Date(raw);
+        if (!Number.isNaN(date.getTime())) {
+            counts[date.getDay()] += 1;
+        }
+    });
+
+    const config = {
+        type: 'bar',
+        data: {
+            labels: dayLabels,
+            datasets: [{
+                label: 'Dream Count',
+                data: counts,
+                backgroundColor: counts.map((v) => v > 0 ? 'rgba(0, 229, 255, 0.55)' : 'rgba(107, 105, 128, 0.35)'),
+                borderColor: '#00e5ff',
+                borderWidth: 1.5,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(26, 24, 37, 0.95)',
+                    titleColor: '#f1f0f5',
+                    bodyColor: '#a8a6b8',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0, stepSize: 1 },
+                    grid: { color: 'rgba(167, 139, 250, 0.05)' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    };
+
+    if (dreamWeekdayChart) {
+        dreamWeekdayChart.data = config.data;
+        dreamWeekdayChart.update();
+    } else {
+        dreamWeekdayChart = new Chart(ctx, config);
+    }
+}
+
+/**
+ * Render scatter of sleep quality vs dream sentiment score
+ */
+function renderSleepSentimentChart(dreams = [], sleepByDate = {}) {
+    const ctx = document.getElementById('sleep-sentiment-chart');
+    if (!ctx) return;
+
+    const points = [];
+    dreams.forEach((dream) => {
+        const dateKey = toDateKey(dream.created_at || dream.date);
+        const sentimentScore = Number(dream.sentiment_score);
+        const linked = sleepByDate[dateKey];
+        const quality = linked && linked.length ? Number(linked[0].quality_rating) : NaN;
+
+        if (Number.isFinite(sentimentScore) && Number.isFinite(quality)) {
+            points.push({
+                x: quality,
+                y: sentimentScore,
+                emotion: dream.primary_emotion || 'neutral'
+            });
+        }
+    });
+
+    const config = {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Dream Points',
+                data: points,
+                backgroundColor: points.map((p) => EMOTION_COLORS[p.emotion] || '#4fd1ff'),
+                borderColor: '#00e5ff',
+                borderWidth: 1,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(26, 24, 37, 0.95)',
+                    titleColor: '#f1f0f5',
+                    bodyColor: '#a8a6b8',
+                    callbacks: {
+                        label: (context) => `Quality: ${context.raw.x}/10 | Sentiment: ${context.raw.y.toFixed(2)}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    min: 0,
+                    max: 10,
+                    title: { display: true, text: 'Sleep Quality (1-10)', color: '#00e5ff' },
+                    grid: { color: 'rgba(167, 139, 250, 0.05)' }
+                },
+                y: {
+                    min: -1,
+                    max: 1,
+                    title: { display: true, text: 'Sentiment Score (-1 to 1)', color: '#4fd1ff' },
+                    grid: { color: 'rgba(167, 139, 250, 0.05)' }
+                }
+            }
+        }
+    };
+
+    if (sleepSentimentChart) {
+        sleepSentimentChart.data = config.data;
+        sleepSentimentChart.update();
+    } else {
+        sleepSentimentChart = new Chart(ctx, config);
+    }
+}
+
+/**
+ * Render compact sentiment chart for dashboard summary
+ */
+function renderSentimentMiniChart(sentimentBreakdown = {}) {
+    const ctx = document.getElementById('analytics-sentiment-mini-chart');
+    if (!ctx) return;
+
+    const entries = Object.entries(sentimentBreakdown)
+        .filter(([, count]) => Number(count) > 0)
+        .sort((a, b) => b[1] - a[1]);
+
+    const labels = entries.length ? entries.map(([label]) => capitalize(label)) : ['No Data'];
+    const values = entries.length ? entries.map(([, value]) => Number(value)) : [1];
+    const colors = entries.length
+        ? labels.map((label) => {
+            const key = label.toLowerCase();
+            if (key === 'positive') return '#22c55e';
+            if (key === 'negative') return '#ef4444';
+            return '#4fd1ff';
+        })
+        : ['#6b6980'];
+
+    const config = {
+        type: 'doughnut',
+        data: {
+            labels,
+            datasets: [{
+                data: values,
+                backgroundColor: colors,
+                borderColor: 'rgba(18, 24, 43, 0.9)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '62%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { boxWidth: 10, padding: 10 }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(26, 24, 37, 0.95)',
+                    titleColor: '#f1f0f5',
+                    bodyColor: '#a8a6b8',
+                }
+            }
+        }
+    };
+
+    if (sentimentMiniChart) {
+        sentimentMiniChart.data = config.data;
+        sentimentMiniChart.update();
+    } else {
+        sentimentMiniChart = new Chart(ctx, config);
+    }
+}
+
+/**
+ * Render compact sleep pattern chart for dashboard summary
+ */
+function renderSleepMiniChart(records = []) {
+    const ctx = document.getElementById('analytics-sleep-mini-chart');
+    if (!ctx) return;
+
+    const qualityValues = records.map((r) => Number(r.quality_rating)).filter((v) => Number.isFinite(v));
+    const durationValues = records.map((r) => Number(r.duration_hours)).filter((v) => Number.isFinite(v));
+    const wakeValues = records.map((r) => Number(r.wakeups || 0)).filter((v) => Number.isFinite(v));
+
+    const avgQuality = qualityValues.length ? qualityValues.reduce((a, b) => a + b, 0) / qualityValues.length : 0;
+    const avgDuration = durationValues.length ? durationValues.reduce((a, b) => a + b, 0) / durationValues.length : 0;
+    const avgWake = wakeValues.length ? wakeValues.reduce((a, b) => a + b, 0) / wakeValues.length : 0;
+
+    const config = {
+        type: 'bar',
+        data: {
+            labels: ['Avg Quality', 'Avg Duration (h)', 'Avg Wakeups'],
+            datasets: [{
+                data: [avgQuality, avgDuration, avgWake],
+                backgroundColor: ['#00e5ffb3', '#4fd1ffb3', '#7ca7d8b3'],
+                borderColor: ['#00e5ff', '#4fd1ff', '#7ca7d8'],
+                borderWidth: 2,
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: 'rgba(26, 24, 37, 0.95)',
+                    titleColor: '#f1f0f5',
+                    bodyColor: '#a8a6b8',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(167, 139, 250, 0.05)' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            }
+        }
+    };
+
+    if (sleepMiniChart) {
+        sleepMiniChart.data = config.data;
+        sleepMiniChart.update();
+    } else {
+        sleepMiniChart = new Chart(ctx, config);
     }
 }
 

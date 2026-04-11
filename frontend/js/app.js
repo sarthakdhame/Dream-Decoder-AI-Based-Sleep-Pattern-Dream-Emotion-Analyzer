@@ -223,6 +223,24 @@ function getLiveDateTimeParts() {
     return { date, time };
 }
 
+function toDateKey(value) {
+    if (!value) return '';
+
+    const text = String(value).trim();
+    const directMatch = text.match(/^(\d{4}-\d{2}-\d{2})/);
+    if (directMatch) return directMatch[1];
+
+    const parsed = new Date(text);
+    if (!Number.isNaN(parsed.getTime())) {
+        const y = parsed.getFullYear();
+        const m = String(parsed.getMonth() + 1).padStart(2, '0');
+        const d = String(parsed.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    return '';
+}
+
 // ==========================================
 // DREAM HANDLING
 // ==========================================
@@ -459,7 +477,7 @@ async function loadDreams() {
         // Pair sleep records to dreams by date and order, so each dream card shows one sleep log.
         const sleepByDate = {};
         sleepRecords.forEach((record) => {
-            const key = (record.date || '').split('T')[0];
+            const key = toDateKey(record.date);
             if (!key) return;
             if (!sleepByDate[key]) sleepByDate[key] = [];
             sleepByDate[key].push(record);
@@ -467,7 +485,7 @@ async function loadDreams() {
 
         const dreamDateIndices = {};
         dreamJournalCache = dreams.map((dream) => {
-            const dateKey = (dream.created_at || '').split('T')[0].split(' ')[0];
+            const dateKey = toDateKey(dream.created_at || dream.date);
             dreamDateIndices[dateKey] = (dreamDateIndices[dateKey] || 0);
             const idx = dreamDateIndices[dateKey];
             const linkedSleep = (sleepByDate[dateKey] && sleepByDate[dateKey][idx]) ? sleepByDate[dateKey][idx] : null;
@@ -989,14 +1007,22 @@ async function loadSleepRecords() {
         const records = response.records || [];
         const dreams = dreamsResp?.dreams || [];
 
-        // Group dreams by date so each sleep record can show its related dream log.
+        // Group dreams by date and sort by recency for one-to-one pairing with sleep records.
         const dreamsByDate = dreams.reduce((acc, dream) => {
-            const dateKey = ((dream.created_at || '').split('T')[0] || (dream.created_at || '').split(' ')[0] || '').trim();
+            const dateKey = toDateKey(dream.created_at || dream.date);
             if (!dateKey) return acc;
             if (!acc[dateKey]) acc[dateKey] = [];
             acc[dateKey].push(dream);
             return acc;
         }, {});
+
+        Object.keys(dreamsByDate).forEach((dateKey) => {
+            dreamsByDate[dateKey].sort((a, b) => {
+                const aTs = new Date(a.created_at || a.date || 0).getTime();
+                const bTs = new Date(b.created_at || b.date || 0).getTime();
+                return bTs - aTs;
+            });
+        });
 
         // Update stats
         if (avgQuality) {
@@ -1020,9 +1046,13 @@ async function loadSleepRecords() {
             return;
         }
 
+        const recordDateIndices = {};
         container.innerHTML = records.map(record => {
-            const dateKey = (record.date || '').split('T')[0];
-            const relatedDreams = dreamsByDate[dateKey] || [];
+            const dateKey = toDateKey(record.date);
+            const idx = recordDateIndices[dateKey] || 0;
+            const relatedDream = (dreamsByDate[dateKey] || [])[idx] || null;
+            const relatedDreams = relatedDream ? [relatedDream] : [];
+            recordDateIndices[dateKey] = idx + 1;
             return renderSleepItem(record, relatedDreams);
         }).join('');
 
@@ -1092,21 +1122,21 @@ function renderSleepItem(record, relatedDreams = []) {
 
     const dreamLogHtml = relatedDreams.length
         ? `
-            <div class="sleep-item-dream-log">
-                <div class="sleep-item-dream-title">📝 Dream Log (${relatedDreams.length})</div>
+            <details class="sleep-item-dream-log sleep-item-dream-accordion">
+                <summary class="sleep-item-dream-title">📝 Dream Log (${relatedDreams.length})</summary>
                 <div class="sleep-item-dream-list">
-                    ${relatedDreams.slice(0, 3).map((dream) => {
+                    ${relatedDreams.map((dream) => {
             const emotion = dream.primary_emotion || 'neutral';
-            const snippet = escapeHtml((dream.content || '').slice(0, 110));
+            const fullText = escapeHtml(dream.content || '');
             return `
                             <div class="sleep-item-dream-entry">
                                 <span class="dream-entry-emotion">${getEmotionEmoji(emotion)} ${capitalize(emotion)}</span>
-                                <span class="dream-entry-text">${snippet}${(dream.content || '').length > 110 ? '...' : ''}</span>
+                                <span class="dream-entry-text">${fullText}</span>
                             </div>
                         `;
         }).join('')}
                 </div>
-            </div>
+            </details>
         `
         : `
             <div class="sleep-item-dream-log muted">
@@ -1147,41 +1177,160 @@ async function loadAnalytics() {
     const periodSelect = document.getElementById('emotion-period');
     const days = periodSelect ? parseInt(periodSelect.value) : 30;
 
+    const analyticsTotalDreams = document.getElementById('analytics-total-dreams');
+    const analyticsAvgSleep = document.getElementById('analytics-avg-sleep');
+    const analyticsDominantSentiment = document.getElementById('analytics-dominant-sentiment');
+    const analyticsTopEmotion = document.getElementById('analytics-top-emotion');
+    const analyticsSentimentNote = document.getElementById('analytics-sentiment-note');
+    const analyticsSleepNote = document.getElementById('analytics-sleep-note');
+
     console.log(`📊 Loading analytics for ${days} days...`);
     try {
-        // Get trends data
-        const trends = await getTrends(days);
-        console.log('✅ Received trends data:', trends);
+        const [trendsResult, insightsResult, recentDreamsResult, recentSleepResult] = await Promise.allSettled([
+            getTrends(days),
+            getInsights(days),
+            getRecentDreams(days),
+            getRecentSleep(days)
+        ]);
+
+        const trends = trendsResult.status === 'fulfilled' ? trendsResult.value : null;
+        const insights = insightsResult.status === 'fulfilled' ? insightsResult.value : null;
+        const recentDreamsResp = recentDreamsResult.status === 'fulfilled' ? recentDreamsResult.value : null;
+        const recentSleepResp = recentSleepResult.status === 'fulfilled' ? recentSleepResult.value : null;
+
+        if (trendsResult.status === 'rejected') {
+            console.warn('⚠️ Trends endpoint failed:', trendsResult.reason);
+        }
+        if (insightsResult.status === 'rejected') {
+            console.warn('⚠️ Insights endpoint failed:', insightsResult.reason);
+        }
+        if (recentDreamsResult.status === 'rejected') {
+            console.warn('⚠️ Recent dreams endpoint failed:', recentDreamsResult.reason);
+        }
+        if (recentSleepResult.status === 'rejected') {
+            console.warn('⚠️ Recent sleep endpoint failed:', recentSleepResult.reason);
+        }
+
+        console.log('✅ Analytics payload readiness:', {
+            trends: !!trends,
+            insights: !!insights,
+            recentDreams: !!recentDreamsResp,
+            recentSleep: !!recentSleepResp
+        });
+
+        const dreams = recentDreamsResp?.dreams || [];
+        const sleepRecords = recentSleepResp?.records || [];
+        const sleepByDate = sleepRecords.reduce((acc, record) => {
+            const dateKey = toDateKey(record.date);
+            if (!dateKey) return acc;
+            if (!acc[dateKey]) acc[dateKey] = [];
+            acc[dateKey].push(record);
+            return acc;
+        }, {});
+
+        renderAnalyticsDashboard(
+            dreams,
+            sleepRecords,
+            insights?.stats || {},
+            analyticsSentimentNote,
+            analyticsSleepNote,
+            analyticsTotalDreams,
+            analyticsAvgSleep,
+            analyticsDominantSentiment,
+            analyticsTopEmotion
+        );
 
         // Render emotion trends chart
-        if (trends.emotions) {
+        if (trends?.emotions) {
             renderEmotionChart(trends.emotions);
         }
 
         // Render sleep chart
-        if (trends.sleep) {
+        if (trends?.sleep) {
             renderSleepChart(trends.sleep);
         }
 
-        // Get insights for additional data
-        const insights = await getInsights(days);
-
         // Render emotion pie chart
-        if (insights.stats && insights.stats.emotion_breakdown) {
+        if (insights?.stats && insights.stats.emotion_breakdown) {
             const breakdown = insights.stats.emotion_breakdown;
             if (Object.keys(breakdown).length > 0) {
                 renderEmotionPieChart(breakdown);
             }
         }
 
-        // Render keywords cloud
-        if (insights.stats && insights.stats.top_keywords) {
-            renderKeywordsCloud(insights.stats.top_keywords);
+        // Render themes chart
+        if (insights?.stats && insights.stats.top_keywords) {
+            renderThemesChart(insights.stats.top_keywords);
         }
+
+        // Render advanced analytics visuals
+        renderDreamWeekdayChart(dreams);
+        renderSleepSentimentChart(dreams, sleepByDate);
 
     } catch (error) {
         console.error('Failed to load analytics:', error);
     }
+}
+
+function renderAnalyticsDashboard(
+    dreams,
+    sleepRecords,
+    stats,
+    sentimentNoteEl,
+    sleepNoteEl,
+    totalDreamsEl,
+    avgSleepEl,
+    dominantSentimentEl,
+    topEmotionEl
+) {
+    if (totalDreamsEl) totalDreamsEl.textContent = stats.total_dreams || dreams.length || 0;
+
+    if (avgSleepEl) {
+        avgSleepEl.textContent = stats.avg_sleep_quality !== null && stats.avg_sleep_quality !== undefined
+            ? `${Number(stats.avg_sleep_quality).toFixed(0)}/100`
+            : 'N/A';
+    }
+
+    if (dominantSentimentEl) {
+        const sentiments = stats.sentiment_breakdown || {};
+        const topSentiment = Object.entries(sentiments).sort((a, b) => b[1] - a[1])[0];
+        dominantSentimentEl.textContent = topSentiment ? capitalize(topSentiment[0]) : '-';
+    }
+
+    if (topEmotionEl) {
+        const emotions = stats.emotion_breakdown || {};
+        const topEmotion = Object.entries(emotions).sort((a, b) => b[1] - a[1])[0];
+        topEmotionEl.textContent = topEmotion ? `${getEmotionEmoji(topEmotion[0])} ${capitalize(topEmotion[0])}` : '-';
+    }
+
+    const sentimentBreakdown = stats.sentiment_breakdown || {};
+    const sentimentEntries = Object.entries(sentimentBreakdown).filter(([, count]) => Number(count) > 0);
+    if (sentimentNoteEl) {
+        if (!sentimentEntries.length) {
+            sentimentNoteEl.textContent = 'Not enough sentiment data yet';
+        } else {
+            const topSentiment = sentimentEntries.sort((a, b) => b[1] - a[1])[0];
+            sentimentNoteEl.textContent = `Top sentiment: ${capitalize(topSentiment[0])} (${topSentiment[1]} dreams)`;
+        }
+    }
+
+    const records = Array.isArray(sleepRecords) ? sleepRecords : [];
+    if (sleepNoteEl) {
+        if (!records.length) {
+            sleepNoteEl.textContent = 'No sleep records available yet';
+        } else {
+            const avgDuration = records
+                .map((r) => Number(r.duration_hours))
+                .filter((v) => Number.isFinite(v));
+            const durationVal = avgDuration.length ? (avgDuration.reduce((a, b) => a + b, 0) / avgDuration.length) : null;
+            sleepNoteEl.textContent = durationVal !== null
+                ? `Average sleep duration: ${durationVal.toFixed(1)}h`
+                : 'Sleep records found, duration not available';
+        }
+    }
+
+    renderSentimentMiniChart(sentimentBreakdown);
+    renderSleepMiniChart(records);
 }
 
 // ==========================================
@@ -1584,6 +1733,16 @@ function formatDateTime(dateStr) {
         hour: 'numeric',
         minute: '2-digit'
     });
+}
+
+/**
+ * Truncate long text for compact list rendering
+ */
+function truncateText(text, maxLength = 160) {
+    if (text === null || text === undefined) return '';
+    const normalized = String(text).trim();
+    if (normalized.length <= maxLength) return normalized;
+    return `${normalized.slice(0, maxLength).trimEnd()}...`;
 }
 
 

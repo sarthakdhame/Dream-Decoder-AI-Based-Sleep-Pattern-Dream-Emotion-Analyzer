@@ -4,16 +4,16 @@
  */
 
 :root {
-    --auth-bg-primary: #0f172a;
-    --auth-bg-secondary: #1e293b;
-    --auth-accent: #6366f1;
-    --auth-accent-hover: #4f46e5;
-    --auth-text-main: #f8fafc;
-    --auth-text-muted: #94a3b8;
-    --auth-glass-bg: rgba(30, 41, 59, 0.7);
-    --auth-glass-border: rgba(255, 255, 255, 0.1);
-    --auth-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    --auth-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    --auth-bg-primary: #0B0F1A;
+    --auth-bg-secondary: #12182B;
+    --auth-accent: #1B6B7F;
+    --auth-accent-hover: #2E9DB5;
+    --auth-text-main: #E6E9F2;
+    --auth-text-muted: #AAB0C5;
+    --auth-glass-bg: rgba(18, 24, 43, 0.75);
+    --auth-glass-border: rgba(255, 255, 255, 0.08);
+    --auth-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    --auth-gradient: linear-gradient(135deg, #1B6B7F 0%, #2E9DB5 50%, #00E5FF 100%);
 }
 
 * {
@@ -26,10 +26,12 @@
 .auth-page {
     background-color: var(--auth-bg-primary);
     background-image:
-        radial-gradient(at 0% 0%, rgba(79, 70, 229, 0.15) 0px, transparent 50%),
-        radial-gradient(at 100% 0%, rgba(124, 58, 237, 0.15) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(79, 70, 229, 0.15) 0px, transparent 50%),
-        radial-gradient(at 0% 100%, rgba(124, 58, 237, 0.15) 0px, transparent 50%);
+        linear-gradient(rgba(10, 18, 30, 0.74), rgba(10, 18, 30, 0.78)),
+        url('../background/phil-botha-a0TJ3hy-UD8-unsplash.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
     min-height: 100dvh;
     height: 100dvh;
     display: flex;

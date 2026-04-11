@@ -239,6 +239,63 @@
 
                 <!-- Analytics Panel -->
                 <section id="analytics-panel" class="tab-panel">
+                    <div class="analytics-overview-grid">
+                        <div class="card analytics-metric-card">
+                            <div class="card-body">
+                                <span class="metric-label">Total Dreams</span>
+                                <span class="metric-value" id="analytics-total-dreams">0</span>
+                            </div>
+                        </div>
+                        <div class="card analytics-metric-card">
+                            <div class="card-body">
+                                <span class="metric-label">Avg Sleep Quality</span>
+                                <span class="metric-value" id="analytics-avg-sleep">N/A</span>
+                            </div>
+                        </div>
+                        <div class="card analytics-metric-card">
+                            <div class="card-body">
+                                <span class="metric-label">Dominant Sentiment</span>
+                                <span class="metric-value" id="analytics-dominant-sentiment">-</span>
+                            </div>
+                        </div>
+                        <div class="card analytics-metric-card">
+                            <div class="card-body">
+                                <span class="metric-label">Top Emotion</span>
+                                <span class="metric-value" id="analytics-top-emotion">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-dashboard-grid">
+                        <div class="card analytics-dashboard-card">
+                            <div class="card-header">
+                                <h2>🧭 Sentiment Snapshot</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="analytics-mini-chart-wrap">
+                                    <canvas id="analytics-sentiment-mini-chart"></canvas>
+                                </div>
+                                <div id="analytics-sentiment-note" class="analytics-mini-note">
+                                    Loading sentiment summary...
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card analytics-dashboard-card">
+                            <div class="card-header">
+                                <h2>🌙 Sleep Pattern Summary</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="analytics-mini-chart-wrap">
+                                    <canvas id="analytics-sleep-mini-chart"></canvas>
+                                </div>
+                                <div id="analytics-sleep-note" class="analytics-mini-note">
+                                    Loading sleep summary...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="analytics-grid">
                         <!-- Emotion Trends Chart -->
                         <div class="card chart-card">
@@ -271,10 +328,11 @@
                                 <h2>🔮 Top Dream Themes</h2>
                             </div>
                             <div class="card-body">
-                                <div id="keywords-cloud" class="keywords-cloud">
-                                    <div class="empty-state small">
-                                        <p>Record more dreams to see themes</p>
-                                    </div>
+                                <div class="analytics-mini-chart-wrap">
+                                    <canvas id="themes-chart"></canvas>
+                                </div>
+                                <div id="themes-chart-note" class="analytics-mini-note">
+                                    Record more dreams to see themes
                                 </div>
                             </div>
                         </div>
@@ -286,6 +344,26 @@
                             </div>
                             <div class="card-body">
                                 <canvas id="emotion-pie-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Dream Activity by Weekday -->
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h2>🗓️ Dream Activity by Weekday</h2>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="dream-weekday-chart"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Sleep vs Sentiment Correlation -->
+                        <div class="card chart-card">
+                            <div class="card-header">
+                                <h2>🎯 Sleep vs Sentiment Correlation</h2>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="sleep-sentiment-chart"></canvas>
                             </div>
                         </div>
                     </div>
