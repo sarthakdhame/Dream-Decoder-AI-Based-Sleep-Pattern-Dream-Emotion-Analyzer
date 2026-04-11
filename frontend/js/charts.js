@@ -46,19 +46,18 @@ function renderEmotionChart(trendData) {
         Object.keys(day.emotions || {}).forEach(e => allEmotions.add(e));
     });
 
-    // Create a dataset for each emotion
+    // Build stacked datasets for each emotion by day
     allEmotions.forEach(emotion => {
         const color = EMOTION_COLORS[emotion] || '#6b6980';
         datasets.push({
             label: capitalize(emotion),
             data: trendData.map(d => (d.emotions && d.emotions[emotion]) || 0),
+            backgroundColor: `${color}CC`,
             borderColor: color,
-            backgroundColor: `${color}22`,
-            fill: true,
-            tension: 0.4,
-            pointRadius: 3,
-            pointHoverRadius: 6,
-            borderWidth: 2,
+            borderWidth: 1,
+            borderRadius: 4,
+            barPercentage: 0.9,
+            categoryPercentage: 0.9,
         });
     });
 
@@ -67,15 +66,15 @@ function renderEmotionChart(trendData) {
         datasets.push({
             label: 'Dreams',
             data: trendData.map(d => d.count || 0),
-            borderColor: '#a78bfa',
-            backgroundColor: 'rgba(167, 139, 250, 0.2)',
-            fill: true,
-            tension: 0.4,
+            borderColor: '#4fd1ff',
+            backgroundColor: 'rgba(79, 209, 255, 0.6)',
+            borderWidth: 1,
+            borderRadius: 4,
         });
     }
 
     const config = {
-        type: 'line',
+        type: 'bar',
         data: { labels, datasets },
         options: {
             responsive: true,
@@ -104,10 +103,17 @@ function renderEmotionChart(trendData) {
                 y: {
                     beginAtZero: true,
                     ticks: { stepSize: 1 },
-                    grid: { color: 'rgba(167, 139, 250, 0.05)' }
+                    grid: { color: 'rgba(167, 139, 250, 0.05)' },
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Dream Count',
+                        color: '#4fd1ff'
+                    }
                 },
                 x: {
-                    grid: { display: false }
+                    grid: { display: false },
+                    stacked: true,
                 }
             },
             interaction: {
@@ -136,29 +142,38 @@ function renderSleepChart(sleepData) {
     const labels = sleepData.map(d => formatDate(d.date));
 
     const config = {
-        type: 'bar',
+        type: 'line',
         data: {
             labels,
             datasets: [
                 {
                     label: 'Sleep Quality',
                     data: sleepData.map(d => d.quality),
-                    backgroundColor: 'rgba(0, 229, 255, 0.5)',
                     borderColor: '#00e5ff',
-                    borderWidth: 2,
-                    borderRadius: 6,
+                    backgroundColor: 'rgba(0, 229, 255, 0.18)',
+                    pointBackgroundColor: '#00e5ff',
+                    pointBorderColor: '#0b0f1a',
+                    pointBorderWidth: 2,
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    tension: 0.35,
+                    fill: true,
                     yAxisID: 'y',
                 },
                 {
                     label: 'Hours Slept',
                     data: sleepData.map(d => d.duration),
-                    type: 'line',
                     borderColor: '#4fd1ff',
                     backgroundColor: 'rgba(79, 209, 255, 0.16)',
+                    pointBackgroundColor: '#4fd1ff',
+                    pointBorderColor: '#0b0f1a',
+                    pointBorderWidth: 2,
+                    borderWidth: 2.5,
+                    pointRadius: 3,
+                    pointHoverRadius: 5,
                     fill: true,
                     tension: 0.4,
-                    pointRadius: 3,
-                    borderWidth: 2,
                     yAxisID: 'y1',
                 }
             ]
@@ -209,6 +224,10 @@ function renderSleepChart(sleepData) {
                 x: {
                     grid: { display: false }
                 }
+            },
+            interaction: {
+                mode: 'index',
+                intersect: false
             }
         }
     };
@@ -228,36 +247,61 @@ function renderEmotionPieChart(emotionBreakdown) {
     const ctx = document.getElementById('emotion-pie-chart');
     if (!ctx) return;
 
-    const labels = Object.keys(emotionBreakdown).map(capitalize);
-    const data = Object.values(emotionBreakdown);
-    const colors = Object.keys(emotionBreakdown).map(e => EMOTION_COLORS[e] || '#6b6980');
+    const entries = Object.entries(emotionBreakdown || {})
+        .filter(([, value]) => Number(value) > 0)
+        .sort((a, b) => Number(b[1]) - Number(a[1]));
+
+    const labels = entries.length ? entries.map(([emotion]) => capitalize(emotion)) : ['No Data'];
+    const data = entries.length ? entries.map(([, value]) => Number(value)) : [1];
+    const colors = entries.length
+        ? entries.map(([emotion]) => EMOTION_COLORS[emotion] || '#6b6980')
+        : ['#6b6980'];
 
     const config = {
-        type: 'polarArea',
+        type: 'doughnut',
         data: {
             labels,
             datasets: [{
                 data,
                 backgroundColor: colors,
-                borderColor: 'rgba(26, 24, 37, 0.8)',
+                borderColor: 'rgba(255, 255, 255, 0.8)',
                 borderWidth: 2,
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            cutout: '58%',
             plugins: {
                 legend: {
                     position: 'right',
                     labels: {
                         boxWidth: 12,
-                        padding: 15
+                        color: '#ffffff',
+                        padding: 15,
+                        generateLabels: function (chart) {
+                            const dataset = chart.data.datasets[0];
+                            const total = dataset.data.reduce((sum, value) => sum + Number(value || 0), 0);
+                            return chart.data.labels.map((label, i) => {
+                                const value = Number(dataset.data[i] || 0);
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                return {
+                                    text: `${label} (${percentage}%)`,
+                                    fillStyle: dataset.backgroundColor[i],
+                                    strokeStyle: dataset.borderColor,
+                                    lineWidth: dataset.borderWidth,
+                                    color: '#ffffff',
+                                    fontColor: '#ffffff',
+                                    index: i
+                                };
+                            });
+                        }
                     }
                 },
                 tooltip: {
                     backgroundColor: 'rgba(26, 24, 37, 0.95)',
-                    titleColor: '#f1f0f5',
-                    bodyColor: '#a8a6b8',
+                    titleColor: '#ffffff',
+                    bodyColor: '#ffffff',
                     borderColor: 'rgba(167, 139, 250, 0.3)',
                     borderWidth: 1,
                     padding: 12,
