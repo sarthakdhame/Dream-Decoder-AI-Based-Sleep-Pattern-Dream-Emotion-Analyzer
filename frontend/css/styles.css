@@ -246,6 +246,7 @@ body::-webkit-scrollbar {
 }
 
 @keyframes moonTilt {
+
     0%,
     100% {
         rotate: 0deg;
@@ -261,6 +262,7 @@ body::-webkit-scrollbar {
 }
 
 @keyframes moonTwinkle {
+
     0%,
     100% {
         opacity: 0.24;
@@ -284,14 +286,12 @@ body::-webkit-scrollbar {
 @keyframes moonGlowBreath {
     from {
         filter:
-            drop-shadow(0 0 8px rgba(0, 212, 255, 0.52))
-            drop-shadow(0 0 14px rgba(156, 77, 255, 0.28));
+            drop-shadow(0 0 8px rgba(0, 212, 255, 0.52)) drop-shadow(0 0 14px rgba(156, 77, 255, 0.28));
     }
 
     to {
         filter:
-            drop-shadow(0 0 16px rgba(0, 229, 255, 0.96))
-            drop-shadow(0 0 30px rgba(156, 77, 255, 0.62));
+            drop-shadow(0 0 16px rgba(0, 229, 255, 0.96)) drop-shadow(0 0 30px rgba(156, 77, 255, 0.62));
     }
 }
 
@@ -312,6 +312,7 @@ body::-webkit-scrollbar {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
     .logo-icon,
     .logo-icon::before,
     .logo-icon::after {
