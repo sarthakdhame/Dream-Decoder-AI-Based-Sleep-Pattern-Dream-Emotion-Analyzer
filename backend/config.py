@@ -15,7 +15,11 @@ HOST = os.environ.get('HOST', '0.0.0.0')
 PORT = int(os.environ.get('PORT', 5000))
 
 # CORS settings
-CORS_ORIGINS = ['http://localhost:5000', 'http://127.0.0.1:5000']
+_cors_origins_raw = os.environ.get('CORS_ORIGINS', '*').strip()
+if _cors_origins_raw == '*':
+    CORS_ORIGINS = '*'
+else:
+    CORS_ORIGINS = [origin.strip() for origin in _cors_origins_raw.split(',') if origin.strip()]
 
 # NLP Model settings
 EMOTION_MODEL = 'AnasAlokla/multilingual_go_emotions'

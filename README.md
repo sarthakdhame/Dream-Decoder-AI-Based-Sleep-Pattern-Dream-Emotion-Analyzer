@@ -1,91 +1,83 @@
-# 🌙 Dream Decoder: Advanced Multilingual Dream Analysis
+# Dream Decoder
 
-**Dream Decoder** is a production-grade, full-stack application that transforms personal journaling into deep psychological insight. Leveraging state-of-the-art Natural Language Processing (NLP) and Artificial Intelligence, the platform analyzes dreams across multiple languages with **100.0% Production Accuracy**.
+Dream Decoder is a full-stack Flask + Vanilla JS application for dream journaling, multilingual NLP analysis, sleep tracking, analytics, and Jungian interpretation.
 
----
+## Features
 
-## 🚀 Advanced NLP Workflow & Precision Logic
+- Dream journal with sentiment, emotion, keywords, and interpretation
+- Sleep log with quality metrics and dream correlation
+- Jungian analysis powered by Gemini (with fallback behavior)
+- Analytics dashboard with global time range filter:
+	- 7, 14, 30, 60, 90, 180, 365 days
+- Multilingual processing (English, Hindi, Marathi, Hinglish)
+- JWT-based authentication
 
-Our proprietary interpretation engine uses a multi-layered hybrid approach to ensure high-fidelity accuracy and psychological depth:
+## Tech Stack
 
-### 1. Context-Weighted Emotion Logic (Highest Priority)
-Unlike simple keyword-based models, our engine analyzes the **dominant emotional tone**.
-- **Context Weighting**: Neutral or peaceful dreams are cross-verified against "Safety" and "Calm" markers to prevent misclassification as "Surprise" or "Negative".
-- **Safety Filters**: Dreams containing safe locations (e.g., Home, Garden) boost positive emotional scoring, overriding single-word anomalies.
+- Backend: Python, Flask, SQLite
+- Frontend: HTML, CSS, Vanilla JavaScript, Chart.js
+- NLP/AI: Transformers, spaCy, Gemini API
+- Auth: PyJWT + bcrypt
 
-### 2. Multi-Stage Sentiment Coordination (Voting System)
-A robust "Voting" logic layer synchronizes transformer model outputs with symbolic polarity:
-- **Symbol Integrity**: If 3+ positive symbols are detected (e.g., Flying, Sunlight, Victory), a negative sentiment label is automatically corrected to ensure consistency.
-- **Logical Alignment**: Sentiment must strictly match the primary emotion (e.g., Joy/Love → Positive).
+## Project Structure
 
-### 3. Intelligent Analysis Pipeline
-- **Script-Aware Detection**: Automatically identifies Devanagari (Hindi/Marathi) and Latin (English/Hinglish) scripts for optimized processing.
-- **Advanced Filtering**: Automated stopword removal specifically for dreams (filters "dream", "thought", "felt", etc.) to extract only high-impact **Symbols, Locations, and Actions**.
-- **Professional Narratives**: Generates substantive 3-part interpretations, eliminating "Needs Improvement" or "Incomplete" labels.
+- `backend/` Flask APIs, services, models, DB logic
+- `frontend/` static UI (HTML/CSS/JS)
+- `data/` SQLite DB files
+- `scripts/maintenance/` utility and maintenance scripts
+- `tests/` test and validation scripts
+- `app.py` root Flask entrypoint for deployment platforms (including Vercel)
 
----
+## Local Setup (Windows)
 
-## ✨ AI-Powered Jungian Analysis
+1. Clone repository.
+2. Create `.env` in project root (or update existing one).
+3. Run `setup.bat`.
+4. Run `start.bat`.
+5. Open `http://localhost:5000`.
 
-Integrated with **Google Gemini AI** to provide specialized psychological dream analysis rooted in Jungian theory:
-- **Archetype Identification**: Uncovers hidden psychological elements such as the Shadow, Anima/Animus, Self, and Persona.
-- **Symbolic Depth**: Interprets symbols based on the collective unconscious to reveal deeper meanings.
-- **Emotional & Growth Insight**: Delivers personalized messages focusing on personal growth and inner integration.
-- **Resilient Architecture**: Includes robust fallback mechanisms to ensure uninterrupted insights even during API rate limits.
+## Environment Variables
 
----
+Common variables:
 
-## 🌎 Multilingual & Voice Features
-- **Full Support**: Optimized for English, Hindi, Marathi, and Hinglish.
-- **Continuous Voice-to-Text**: High-precision microphone listening for natural dream narration.
-- **Health Tracking**: Correlates dream intensity with sleep quality and emotional cycles using accurate **HH:MM** sleep logs.
+- `GEMINI_API_KEY` - required for Jungian AI analysis
+- `PORT` - server port (default: `5000`)
+- `HOST` - server host (default: `0.0.0.0`)
+- `CORS_ORIGINS` - optional; comma-separated origins or `*` (default)
 
----
+Example:
 
-## 📊 Analytics & Insights
-- **Emotion Tracking**: Visualized trends via **Chart.js**.
-- **Sleep Correlation**: Automatically correlates sleep quality and exact sleep duration (HH:MM) with dream emotional intensity.
-- **Dynamic Insights**: Personalized health tips triggered by pattern recognition (e.g., Nightmare alerts, Stress cycles).
+```env
+GEMINI_API_KEY=your_key_here
+PORT=5000
+HOST=0.0.0.0
+CORS_ORIGINS=*
+```
 
----
+## Deployment Notes
 
-## 🛠️ Technology Stack
+- Root `app.py` exports Flask app for runtime discovery.
+- For Vercel/Python deployments, ensure environment variables are set in project settings.
+- Do not commit real secrets.
 
-| Component | Technology |
-|-----------|------------|
-| **Backend** | Python 3.11+, Flask 3.0 |
-| **NLP Engine** | HF Transformers (DistilBERT), SpaCy, Multilingual GoEmotions |
-| **Generative AI** | Google Gemini API (gemini-2.5-flash) |
-| **Security** | Flask-JWT-Extended, Argon2id Hashing |
-| **Frontend** | Vanilla JavaScript (ES6+), CSS3 (Glassmorphism), HTML5 |
-| **Database** | SQLite (SQLAlchemy ORM) |
+## Maintenance Scripts
 
----
+Root clutter has been reduced. Utility scripts are now under:
 
-## 📁 Installation (Windows)
+- `scripts/maintenance/`
 
-1. **Clone the Repository**: `git clone <repo-url>`
-2. **Environment Setup**: Add your `GEMINI_API_KEY` to the `.env` file for advanced Jungian Analysis.
-3. **Initialize Environment**: Run `setup.bat`. This handles virtual environment creation, dependency installation, and database initialization.
-4. **Launch Application**: Run `start.bat`.
-5. **Access App**: Open `http://localhost:5000` in your browser.
+Examples include model listing, path fixes, and verification helpers.
 
----
+## Security Notes
 
-## 🧪 Testing Process
+- Keep `.env` private.
+- Rotate API keys if exposed.
+- Set `CORS_ORIGINS` to specific domains in production.
 
-The project includes a dedicated verification suite for multi-language accuracy:
-- **Unit Tests**: Validating sentiment logic and keyword extraction.
-- **Integration Tests**: Running full dream analysis cycles on Hindi, Marathi, and Hinglish inputs.
-- **Manual QA**: Verifying interpretation quality for "very short" vs. "long" dream descriptions.
-- **End-to-End Validation**: Ensuring responsive design, robust API fallback systems, and reliable browser-side functionality.
+## Run Tests (Optional)
 
----
+- Use scripts in `tests/` and `scripts/` based on your verification needs.
 
-## 📝 Recent Updates & Fixes
-- **Latest**: Integrated Google Gemini AI for deep Jungian psychological analysis and added precise HH:MM sleep duration tracking.
-- Achieved **100.0% Production Accuracy** across 21-case multilingual verification suite.
-- Optimized multilingual sentiment accuracy (Voting System) and end-to-end frontend error handling.
+## License
 
----
-*Professional Development - 2026*
+Add your preferred license information here.
