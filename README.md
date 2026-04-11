@@ -58,6 +58,8 @@ CORS_ORIGINS=*
 
 - Root `app.py` exports Flask app for runtime discovery.
 - For Vercel/Python deployments, ensure environment variables are set in project settings.
+- Deployed backend URL: `https://dream-decoder-701m.onrender.com`
+- Frontend API client is configured to call this Render backend when not running on localhost.
 - Do not commit real secrets.
 
 ## Maintenance Scripts

@@ -15,11 +15,21 @@ HOST = os.environ.get('HOST', '0.0.0.0')
 PORT = int(os.environ.get('PORT', 5000))
 
 # CORS settings
-_cors_origins_raw = os.environ.get('CORS_ORIGINS', '*').strip()
-if _cors_origins_raw == '*':
-    CORS_ORIGINS = '*'
+_cors_origins_raw = os.environ.get('CORS_ORIGINS', '').strip()
+if _cors_origins_raw:
+    # If CORS_ORIGINS env var is set, use it
+    if _cors_origins_raw == '*':
+        CORS_ORIGINS = '*'
+    else:
+        CORS_ORIGINS = [origin.strip() for origin in _cors_origins_raw.split(',') if origin.strip()]
 else:
-    CORS_ORIGINS = [origin.strip() for origin in _cors_origins_raw.split(',') if origin.strip()]
+    # Default production origins
+    CORS_ORIGINS = [
+        'https://dreamdecoder.vercel.app',
+        'https://dream-decoder-701m.onrender.com',
+        'http://localhost:3000',
+        'http://127.0.0.1:3000'
+    ]
 
 # NLP Model settings
 EMOTION_MODEL = 'AnasAlokla/multilingual_go_emotions'

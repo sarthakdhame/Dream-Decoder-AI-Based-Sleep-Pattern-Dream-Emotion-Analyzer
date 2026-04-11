@@ -3,7 +3,10 @@
  * Handles all API communication with the backend
  */
 
-const API_BASE = '';  // Same origin, no prefix needed
+const RENDER_BACKEND_URL = 'https://dream-decoder-701m.onrender.com';
+const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+    ? ''
+    : RENDER_BACKEND_URL;
 
 /**
  * Make an API request with error handling
@@ -59,7 +62,7 @@ async function apiRequest(endpoint, options = {}) {
 
         // Handle network errors (Failed to fetch)
         if (error.message === 'Failed to fetch') {
-            throw new Error('Could not connect to the server. Please ensure the backend is running and you are not opening the file directly (use http://localhost:5000).');
+            throw new Error(`Could not connect to the server. Ensure backend is reachable at ${API_BASE || 'http://localhost:5000'} and avoid opening files via file://.`);
         }
 
         throw error;

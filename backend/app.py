@@ -90,6 +90,9 @@ app = create_app()
 
 
 if __name__ == '__main__':
+    # Get port from environment variable with fallback to 5000
+    port = int(os.environ.get("PORT", 5000))
+    
     print("=" * 60)
     print("Dream Decoder - Starting Server")
     print("=" * 60)
@@ -98,7 +101,7 @@ if __name__ == '__main__':
     # from backend.services.nlp_engine import preload_models
     # preload_models()
     
-    print(f"\nServer running at http://localhost:{PORT}")
+    print(f"\nServer running at http://0.0.0.0:{port}")
     
     # Verify Gemini API Key
     gemini_key = os.getenv("GEMINI_API_KEY")
@@ -113,4 +116,4 @@ if __name__ == '__main__':
         
     print("Press Ctrl+C to stop\n")
     
-    app.run(host=HOST, port=PORT, debug=DEBUG)
+    app.run(host="0.0.0.0", port=port, debug=DEBUG)
