@@ -1,14 +1,9 @@
-"""Vercel Flask entrypoint.
-
-Exports the Flask app instance for Vercel's Python runtime discovery.
-"""
-
+from flask import Flask
 import os
 
-from backend.app import app
+app = Flask(__name__, static_folder="frontend", static_url_path="")
 
 
-if __name__ == "__main__":
-	port = int(os.environ.get("PORT", 5000))
-	host = os.environ.get("HOST", "0.0.0.0")
-	app.run(host=host, port=port)
+@app.route("/")
+def serve_index():
+    return app.send_static_file("index.html")
