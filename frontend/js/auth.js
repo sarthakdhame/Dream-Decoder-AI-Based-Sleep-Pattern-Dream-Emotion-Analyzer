@@ -7,6 +7,7 @@ class AuthService {
     constructor() {
         this.TOKEN_KEY = 'dream_decoder_token';
         this.USER_KEY = 'dream_decoder_user';
+        this.RENDER_BACKEND_URL = 'https://dream-decoder-701m.onrender.com';
     }
 
     /**
@@ -14,7 +15,11 @@ class AuthService {
      */
     async _fetch(endpoint, options) {
         try {
-            const url = typeof API_BASE !== 'undefined' ? `${API_BASE}${endpoint}` : endpoint;
+            const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const baseUrl = typeof API_BASE !== 'undefined'
+                ? API_BASE
+                : (isLocal ? '' : this.RENDER_BACKEND_URL);
+            const url = `${baseUrl}${endpoint}`;
             return await fetch(url, options);
         } catch (error) {
             if (error.message === 'Failed to fetch') {
@@ -22,6 +27,26 @@ class AuthService {
             }
             throw error;
         }
+    }
+
+    /**
+     * Safely parse API responses that may not be JSON on error pages.
+     */
+    async _parseResponse(response) {
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            return await response.json();
+        }
+
+        const text = await response.text();
+        if (!response.ok) {
+            if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+                throw new Error('Server returned HTML instead of JSON. Verify frontend API base URL points to backend deployment.');
+            }
+            throw new Error(text || 'Unexpected server response');
+        }
+
+        return { message: text };
     }
 
     /**
@@ -79,7 +104,7 @@ class AuthService {
             })
         });
 
-        const data = await response.json();
+        const data = await this._parseResponse(response);
 
         if (!response.ok) {
             throw new Error(data.error || 'Signup failed');
@@ -106,7 +131,7 @@ class AuthService {
             })
         });
 
-        const data = await response.json();
+        const data = await this._parseResponse(response);
 
         if (!response.ok) {
             throw new Error(data.error || 'Login failed');
@@ -158,7 +183,7 @@ class AuthService {
             }
         });
 
-        const data = await response.json();
+        const data = await this._parseResponse(response);
 
         if (!response.ok) {
             throw new Error(data.error || 'Failed to delete account');
@@ -186,7 +211,7 @@ class AuthService {
             }
         });
 
-        const data = await response.json();
+        const data = await this._parseResponse(response);
 
         if (!response.ok) {
             // Token might be expired
@@ -221,7 +246,7 @@ class AuthService {
             body: JSON.stringify({ language })
         });
 
-        const data = await response.json();
+        const data = await this._parseResponse(response);
 
         if (!response.ok) {
             throw new Error(data.error || 'Failed to update language');

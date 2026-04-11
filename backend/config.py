@@ -26,6 +26,7 @@ else:
     # Default production origins
     CORS_ORIGINS = [
         'https://dreamdecoder.vercel.app',
+        'https://dreamdecoder-chi.vercel.app',
         'https://dream-decoder-701m.onrender.com',
         'http://localhost:3000',
         'http://127.0.0.1:3000'
