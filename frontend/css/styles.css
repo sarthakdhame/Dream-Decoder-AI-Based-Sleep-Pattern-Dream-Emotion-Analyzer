@@ -196,8 +196,7 @@ body::-webkit-scrollbar {
     transition: transform 0.35s ease;
     transform-origin: center;
     will-change: transform, filter;
-    animation: moonDrift 8.8s cubic-bezier(0.42, 0, 0.58, 1) infinite,
-        moonTilt 11.2s ease-in-out infinite,
+    animation: moonDrift 11.5s ease-in-out infinite,
         moonGlowBreath 4.6s ease-in-out infinite alternate;
 }
 
@@ -234,23 +233,15 @@ body::-webkit-scrollbar {
 
 @keyframes moonDrift {
     0% {
-        transform: translateY(0px) scale(1);
-    }
-
-    25% {
-        transform: translateY(-2px) scale(1.01);
+        transform: translateY(0px);
     }
 
     50% {
-        transform: translateY(-5px) scale(1.03);
-    }
-
-    75% {
-        transform: translateY(-2px) scale(1.01);
+        transform: translateY(-9px);
     }
 
     100% {
-        transform: translateY(0px) scale(1);
+        transform: translateY(0px);
     }
 }
 
