@@ -18,38 +18,73 @@ sleep_analyzer = SleepAnalyzer()
 
 def _fallback_analysis(content, user_language):
     """
-    Return basic analysis when ML models are unavailable.
-    Extracts keywords and detects basic sentiment from text directly.
+    Return smart basic analysis when ML models are unavailable.
+    Extracts important words and detects sentiment from text directly.
     """
     import re
     text_lower = content.lower()
     
-    # Basic keyword extraction - find capitalized words and common dream keywords
+    # Extended dream keyword vocabulary
     dream_keywords = [
         'falling', 'flying', 'chased', 'running', 'trapped', 'lost', 'water', 'death',
         'school', 'exam', 'test', 'monster', 'ghost', 'dark', 'house', 'car', 'crash',
-        'family', 'friend', 'baby', 'animal', 'fire', 'snake', 'chase', 'fear', 'scared'
+        'family', 'friend', 'baby', 'animal', 'fire', 'snake', 'chase', 'fear', 'scared',
+        'forest', 'mountain', 'ocean', 'sky', 'city', 'road', 'door', 'room', 'stairs',
+        'war', 'battle', 'fight', 'climb', 'swim', 'jump', 'fall', 'sleep', 'wake'
     ]
     
+    # Find exact dream keywords in text
     found_keywords = [kw for kw in dream_keywords if kw in text_lower]
     
-    # Simple sentiment detection based on keywords
-    negative_words = ['scary', 'afraid', 'terror', 'dangerous', 'death', 'dying', 'monster', 
-                      'ghost', 'fear', 'dark', 'nightmare', 'threat', 'attack', 'hurt', 'pain']
-    positive_words = ['happy', 'joy', 'love', 'beautiful', 'wonderful', 'amazing', 'flying', 
-                      'light', 'peace', 'calm', 'safe', 'friend', 'success']
+    # Extract important words by length (4+ chars) and frequency, excluding common stop words
+    stop_words = {'the', 'and', 'was', 'with', 'from', 'were', 'been', 'have', 'that', 'this', 'have', 'what', 'when', 'where', 'which', 'could', 'would', 'should'}
+    words = re.findall(r'\b\w+\b', text_lower)
+    word_freq = {}
+    for word in words:
+        if len(word) >= 4 and word not in stop_words:
+            word_freq[word] = word_freq.get(word, 0) + 1
     
-    neg_count = sum(1 for word in negative_words if word in text_lower)
-    pos_count = sum(1 for word in positive_words if word in text_lower)
+    # Get top words that aren't already in found_keywords
+    extracted = sorted(word_freq.items(), key=lambda x: (-x[1], -len(x[0])))
+    extra_keywords = [w[0] for w in extracted if w[0] not in found_keywords and w[1] >= 2]
     
-    if neg_count > pos_count:
+    # Combine: prioritize dream keywords, then add frequent extracted words
+    all_keywords = found_keywords + extra_keywords
+    final_keywords = list(dict.fromkeys(all_keywords))[:8]  # Remove duplicates, keep top 8
+    
+    # If still empty, use general dream categories
+    if not final_keywords:
+        final_keywords = ['dream', 'sleep', 'night']
+    
+    # Comprehensive sentiment detection
+    negative_words = {
+        'scary': 2, 'afraid': 2, 'terror': 3, 'dangerous': 2, 'death': 2, 'dying': 2, 'monster': 2,
+        'ghost': 1, 'fear': 2, 'dark': 1, 'nightmare': 3, 'threat': 2, 'attack': 2, 'hurt': 2,
+        'pain': 2, 'sad': 2, 'angry': 2, 'fail': 2, 'lost': 1, 'trapped': 2, 'chase': 1,
+        'running': 1, 'falling': 1, 'hurt': 2, 'bad': 1, 'wrong': 1, 'broken': 1
+    }
+    positive_words = {
+        'happy': 2, 'joy': 3, 'love': 2, 'beautiful': 2, 'wonderful': 3, 'amazing': 3, 'flying': 1,
+        'light': 1, 'peace': 2, 'calm': 2, 'safe': 2, 'friend': 1, 'success': 2, 'good': 1,
+        'great': 1, 'smile': 2, 'laugh': 2, 'win': 2, 'found': 1, 'free': 1, 'easy': 1
+    }
+    
+    neg_score = sum(weight for word, weight in negative_words.items() if word in text_lower)
+    pos_score = sum(weight for word, weight in positive_words.items() if word in text_lower)
+    
+    if neg_score > pos_score:
         sentiment = 'negative'
-        primary_emotion = 'fear' if 'fear' in text_lower or 'scary' in text_lower or 'nightmare' in text_lower else 'sadness'
-        sentiment_score = -0.7
-    elif pos_count > neg_count:
+        if 'fear' in text_lower or 'scary' in text_lower or 'nightmare' in text_lower or 'monster' in text_lower:
+            primary_emotion = 'fear'
+        elif 'angry' in text_lower or 'fight' in text_lower or 'attack' in text_lower:
+            primary_emotion = 'anger'
+        else:
+            primary_emotion = 'sadness'
+        sentiment_score = -0.6 - min(0.3, neg_score / 10)
+    elif pos_score > neg_score:
         sentiment = 'positive'
         primary_emotion = 'joy'
-        sentiment_score = 0.7
+        sentiment_score = 0.6 + min(0.3, pos_score / 10)
     else:
         sentiment = 'neutral'
         primary_emotion = 'neutral'
@@ -59,17 +94,18 @@ def _fallback_analysis(content, user_language):
         'sentiment': sentiment,
         'sentiment_score': sentiment_score,
         'primary_emotion': primary_emotion,
-        'emotion_scores': {primary_emotion: 0.6} if primary_emotion != 'neutral' else {},
-        'keywords': found_keywords[:5] if found_keywords else ['dream'],
+        'emotion_scores': {primary_emotion: 0.7} if primary_emotion != 'neutral' else {},
+        'keywords': final_keywords,
         'entities': [],
-        'themes': ['nightmare' if sentiment == 'negative' else 'ordinary'],
-        'summary': f'Basic analysis: This dream has a {sentiment} tone with themes of {", ".join(found_keywords[:3]) if found_keywords else "dreams"}.',
+        'themes': ['nightmare' if sentiment == 'negative' else 'peaceful' if sentiment == 'positive' else 'ordinary'],
+        'categories': ['nightmare' if 'monster' in final_keywords or 'chase' in final_keywords else 'ordinary'],
+        'summary': f'This dream has a {sentiment} tone with themes of {", ".join(final_keywords[:3])}.',
         'interpretation': {
-            'overall_message': 'Full analysis unavailable. Basic keywords and sentiment detected from text.'
+            'overall_message': 'Analysis based on text pattern recognition. Full ML analysis unavailable.'
         },
-        'emotion_confidence': 0.5,
+        'emotion_confidence': 0.6,
         'detected_language': user_language,
-        'language_confidence': 0.8,
+        'language_confidence': 0.9,
     }
 
 

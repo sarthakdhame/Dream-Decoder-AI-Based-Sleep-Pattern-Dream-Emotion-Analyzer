@@ -100,23 +100,50 @@ def create_app():
     # Cache control for static assets
     @app.after_request
     def add_header(response):
-        """Add headers to both force latest IE rendering engine or to cache static assets."""
+        """Add CORS and cache control headers to all responses."""
         origin = request.headers.get('Origin')
-        if _origin_allowed(origin):
-            response.headers['Access-Control-Allow-Origin'] = origin
-            response.headers['Access-Control-Allow-Credentials'] = 'true'
-            response.headers['Vary'] = 'Origin'
-
-            # Ensure browser preflight requests always receive allowed headers/methods.
-            requested_headers = request.headers.get('Access-Control-Request-Headers')
-            if requested_headers:
-                response.headers['Access-Control-Allow-Headers'] = requested_headers
-            else:
-                response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
-
-            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD'
+        
+        # ALWAYS set CORS headers for recognized deployment domains
+        # This ensures even error responses include CORS headers
+        if origin:
+            origin_lower = origin.lower().strip().rstrip('/')
+            
+            # Explicitly allow current deployment URLs
+            allowed_origins = [
+                'https://dream-decoder-ai-based-sleep-patter.vercel.app',
+                'https://dreamdecoder.vercel.app',
+                'https://dreamdecoder-chi.vercel.app',
+                'http://localhost:3000',
+                'http://127.0.0.1:3000'
+            ]
+            
+            # Check explicit list
+            if origin_lower in allowed_origins:
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+                response.headers['Vary'] = 'Origin'
+            # Fallback: allow any Vercel or Render domain
+            elif origin_lower.endswith('.vercel.app') or origin_lower.endswith('.onrender.com'):
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+                response.headers['Vary'] = 'Origin'
+            # Localhost for development
+            elif origin_lower.startswith('http://localhost') or origin_lower.startswith('http://127.0.0.1'):
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Access-Control-Allow-Credentials'] = 'true'
+                response.headers['Vary'] = 'Origin'
+            
+            # Always set these headers when origin is known
+            if 'Access-Control-Allow-Origin' in response.headers:
+                requested_headers = request.headers.get('Access-Control-Request-Headers')
+                if requested_headers:
+                    response.headers['Access-Control-Allow-Headers'] = requested_headers
+                else:
+                    response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+                response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD'
 
         if 'Cache-Control' not in response.headers:
+            # Cache static assets for 1 day
             # Cache static assets for 1 day
             if request.path.endswith(('.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico')):
                 response.headers['Cache-Control'] = 'public, max-age=86400'
