@@ -32,25 +32,20 @@ def _fallback_analysis(content, user_language):
         'forest', 'mountain', 'ocean', 'sky', 'city', 'road', 'door', 'room', 'stairs',
         'war', 'battle', 'fight', 'climb', 'swim', 'jump', 'fall', 'sleep', 'wake'
     ]
-    
-    # Find exact dream keywords in text
-    found_keywords = [kw for kw in dream_keywords if kw in text_lower]
-    
-    # Extract important words by length (4+ chars) and frequency, excluding common stop words
+
+    # Single keyword extraction pass using weighted candidates.
     stop_words = {'the', 'and', 'was', 'with', 'from', 'were', 'been', 'have', 'that', 'this', 'have', 'what', 'when', 'where', 'which', 'could', 'would', 'should'}
     words = re.findall(r'\b\w+\b', text_lower)
-    word_freq = {}
+    dream_keyword_set = set(dream_keywords)
+    keyword_scores = {}
+
     for word in words:
         if len(word) >= 4 and word not in stop_words:
-            word_freq[word] = word_freq.get(word, 0) + 1
-    
-    # Get top words that aren't already in found_keywords
-    extracted = sorted(word_freq.items(), key=lambda x: (-x[1], -len(x[0])))
-    extra_keywords = [w[0] for w in extracted if w[0] not in found_keywords and w[1] >= 2]
-    
-    # Combine: prioritize dream keywords, then add frequent extracted words
-    all_keywords = found_keywords + extra_keywords
-    final_keywords = list(dict.fromkeys(all_keywords))[:8]  # Remove duplicates, keep top 8
+            # Prioritize curated dream vocabulary and then frequency.
+            keyword_scores[word] = keyword_scores.get(word, 0) + (3 if word in dream_keyword_set else 1)
+
+    ranked_keywords = sorted(keyword_scores.items(), key=lambda x: (-x[1], -len(x[0])))
+    final_keywords = [word for word, _ in ranked_keywords[:8]]
     
     # If still empty, use general dream categories
     if not final_keywords:
@@ -89,24 +84,90 @@ def _fallback_analysis(content, user_language):
         sentiment = 'neutral'
         primary_emotion = 'neutral'
         sentiment_score = 0.0
+
+    # Provide multi-emotion output so UI charts and summaries are never empty.
+    if primary_emotion == 'fear':
+        emotion_scores = {'fear': 0.72, 'sadness': 0.44, 'surprise': 0.31}
+    elif primary_emotion == 'anger':
+        emotion_scores = {'anger': 0.69, 'fear': 0.38, 'disgust': 0.33}
+    elif primary_emotion == 'sadness':
+        emotion_scores = {'sadness': 0.67, 'fear': 0.34, 'neutral': 0.28}
+    elif primary_emotion == 'joy':
+        emotion_scores = {'joy': 0.71, 'trust': 0.45, 'anticipation': 0.32}
+    else:
+        emotion_scores = {'neutral': 0.62, 'anticipation': 0.24, 'trust': 0.22}
     
     return {
         'sentiment': sentiment,
         'sentiment_score': sentiment_score,
         'primary_emotion': primary_emotion,
-        'emotion_scores': {primary_emotion: 0.7} if primary_emotion != 'neutral' else {},
+        'emotion_scores': emotion_scores,
         'keywords': final_keywords,
         'entities': [],
         'themes': ['nightmare' if sentiment == 'negative' else 'peaceful' if sentiment == 'positive' else 'ordinary'],
         'categories': ['nightmare' if 'monster' in final_keywords or 'chase' in final_keywords else 'ordinary'],
-        'summary': f'This dream has a {sentiment} tone with themes of {", ".join(final_keywords[:3])}.',
+        'summary': f'This dream has a {sentiment} tone with themes of {", ".join(final_keywords[:3])}. Key symbols suggest ongoing emotional processing during sleep.',
         'interpretation': {
-            'overall_message': 'Analysis based on text pattern recognition. Full ML analysis unavailable.'
+            'overall_message': 'Analysis based on text pattern recognition. Full ML analysis unavailable.',
+            'emotional_pattern': f"Primary emotion appears to be {primary_emotion} with a {sentiment} polarity ({sentiment_score:.2f}).",
+            'symbolic_focus': f"Most recurrent symbols: {', '.join(final_keywords[:4])}.",
+            'guidance': 'Consider journaling what happened before sleep and any real-life events connected to these symbols.'
         },
         'emotion_confidence': 0.6,
         'detected_language': user_language,
         'language_confidence': 0.9,
     }
+
+
+def _generate_local_jungian_report(content, analysis):
+    """Create a structured Jungian-style report when external AI is unavailable."""
+    keywords = analysis.get('keywords', [])[:5]
+    primary_emotion = analysis.get('primary_emotion', 'neutral')
+    sentiment = analysis.get('sentiment', 'neutral')
+
+    symbol_text = ', '.join(keywords) if keywords else 'journey, self, transition'
+    archetypes = []
+    lowered = content.lower()
+
+    if any(token in lowered for token in ('monster', 'shadow', 'dark', 'chase', 'fear')):
+        archetypes.append('Shadow')
+    if any(token in lowered for token in ('friend', 'mother', 'father', 'family', 'guide')):
+        archetypes.append('Persona/Relational Self')
+    if any(token in lowered for token in ('house', 'room', 'door', 'road', 'forest', 'mountain')):
+        archetypes.append('Self (inner landscape)')
+    if not archetypes:
+        archetypes = ['Self', 'Shadow']
+
+    emotional_insight = (
+        f"The dream carries a {sentiment} tone with {primary_emotion} as the dominant affect. "
+        "This usually reflects unresolved emotional material surfacing during sleep for integration."
+    )
+
+    growth_message = (
+        "Track repeating symbols across 3-5 dreams and connect them to recent waking-life stressors, "
+        "relationships, and decisions. Repeated symbols often indicate a psychological theme ready for conscious work."
+    )
+
+    return (
+        "Title: Jungian Interpretation\n\n"
+        f"1. Symbols Meaning: The recurring symbols ({symbol_text}) suggest a movement between safety and uncertainty, "
+        "often representing internal conflict, adaptation, and identity processing.\n\n"
+        f"2. Archetypes Identified: {', '.join(archetypes)}. These archetypes indicate active dialogue between conscious choices "
+        "and unconscious fears/desires.\n\n"
+        f"3. Emotional Insight: {emotional_insight}\n\n"
+        f"4. Personal Growth Message: {growth_message}"
+    )
+
+
+def _compact_report_for_list(dream_dict, max_report_chars=1800):
+    """Reduce payload size for list APIs while preserving preview-ready report content."""
+    report = dream_dict.get('jungian_report') or {}
+    analysis_text = report.get('analysis') if isinstance(report, dict) else None
+    if isinstance(analysis_text, str) and len(analysis_text) > max_report_chars:
+        compact = dict(report)
+        compact['analysis'] = analysis_text[:max_report_chars] + '...'
+        dream_dict['jungian_report'] = compact
+    return dream_dict
 
 
 def _compute_duration_hours(sleep_time, wake_time):
@@ -172,10 +233,11 @@ def create_dream():
             jungian_result = analyze_jungian(content)
             if 'error' in jungian_result:
                 jungian_report = {
-                    'analysis': jungian_result['error'],
+                    'analysis': _generate_local_jungian_report(content, analysis),
                     'provider': 'Unavailable',
                     'status': 'error',
-                    'generated_at': datetime.utcnow().isoformat()
+                    'generated_at': datetime.utcnow().isoformat(),
+                    'fallback_reason': jungian_result['error']
                 }
             else:
                 jungian_report = {
@@ -187,10 +249,11 @@ def create_dream():
         except Exception as jungian_err:
             print(f"WARNING: Jungian analysis skipped due to error: {jungian_err}")
             jungian_report = {
-                'analysis': 'Jungian report could not be generated for this dream.',
+                'analysis': _generate_local_jungian_report(content, analysis),
                 'provider': 'Unavailable',
                 'status': 'error',
-                'generated_at': datetime.utcnow().isoformat()
+                'generated_at': datetime.utcnow().isoformat(),
+                'fallback_reason': str(jungian_err)
             }
         
         # Create dream object with user_id
@@ -287,25 +350,77 @@ def create_dream():
 @require_auth
 def get_dreams():
     """Get all dreams for the authenticated user with optional pagination."""
-    user = request.current_user
-    limit = request.args.get('limit', 50, type=int)
-    offset = request.args.get('offset', 0, type=int)
-    
-    # Validation
-    if limit < 1 or limit > 100:
-        limit = 50
-    if offset < 0:
-        offset = 0
-        
-    dreams = Dream.get_all(user.id, limit=limit, offset=offset)
-    total = Dream.count(user.id)
-    
-    return jsonify({
-        'dreams': [d.to_dict() for d in dreams],
-        'total': total,
-        'limit': limit,
-        'offset': offset
-    })
+    try:
+        user = request.current_user
+        limit = request.args.get('limit', 50, type=int)
+        offset = request.args.get('offset', 0, type=int)
+        include_compact_report = request.args.get('include_compact_report', '0') in ('1', 'true', 'yes')
+
+        # Validation
+        if limit < 1 or limit > 100:
+            limit = 50
+        if offset < 0:
+            offset = 0
+
+        dreams = Dream.get_all(user.id, limit=limit, offset=offset)
+        total = Dream.count(user.id)
+
+        dream_items = [d.to_dict() for d in dreams]
+        if include_compact_report:
+            dream_items = [_compact_report_for_list(item) for item in dream_items]
+
+        return jsonify({
+            'dreams': dream_items,
+            'total': total,
+            'limit': limit,
+            'offset': offset
+        })
+    except Exception as e:
+        import traceback
+        print(f"ERROR in get_dreams: {e}")
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to fetch dreams'}), 500
+
+
+@dreams_bp.route('/api/dreams/reports', methods=['GET'])
+@require_auth
+def get_jungian_reports():
+    """Get compact dream entries that include Jungian reports for journal view."""
+    try:
+        user = request.current_user
+        limit = request.args.get('limit', 50, type=int)
+        offset = request.args.get('offset', 0, type=int)
+
+        if limit < 1 or limit > 100:
+            limit = 50
+        if offset < 0:
+            offset = 0
+
+        dreams = Dream.get_all(user.id, limit=limit, offset=offset)
+        items = []
+        for dream in dreams:
+            d = dream.to_dict()
+            report = d.get('jungian_report') or {}
+            if isinstance(report, dict) and report.get('analysis'):
+                compact = {
+                    'id': d.get('id'),
+                    'content': d.get('content'),
+                    'created_at': d.get('created_at'),
+                    'jungian_report': report
+                }
+                items.append(_compact_report_for_list(compact, max_report_chars=2500))
+
+        return jsonify({
+            'dreams': items,
+            'count': len(items),
+            'limit': limit,
+            'offset': offset
+        })
+    except Exception as e:
+        import traceback
+        print(f"ERROR in get_jungian_reports: {e}")
+        traceback.print_exc()
+        return jsonify({'error': 'Failed to fetch Jungian reports'}), 500
 
 
 @dreams_bp.route('/api/dreams/<int:dream_id>', methods=['GET'])

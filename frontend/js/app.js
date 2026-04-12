@@ -1791,7 +1791,7 @@ function handleJungianTab() {
             if (analyzeBtn) analyzeBtn.disabled = true;
             contentDiv.innerHTML = '<p class="hint">Loading stored Jungian reports...</p>';
 
-            const response = await getDreams(200, 0);
+            const response = await getDreamReports(80, 0);
             const dreams = response?.dreams || [];
             const withReports = dreams.filter(d => d.jungian_report && d.jungian_report.analysis);
 

@@ -40,7 +40,27 @@ async function apiRequest(endpoint, options = {}) {
     }
 
     try {
-        const response = await fetch(url, config);
+        const method = (config.method || 'GET').toUpperCase();
+        let response;
+        let lastError;
+
+        // Retry idempotent GET requests once to absorb transient Render connection resets.
+        for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+                response = await fetch(url, config);
+                lastError = null;
+                break;
+            } catch (err) {
+                lastError = err;
+                if (method !== 'GET' || attempt === 1) {
+                    throw err;
+                }
+            }
+        }
+
+        if (!response && lastError) {
+            throw lastError;
+        }
 
         let data;
         const contentType = response.headers.get('content-type');
@@ -98,6 +118,13 @@ async function createDream(contentOrPayload) {
  */
 async function getDreams(limit = 50, offset = 0) {
     return apiRequest(`/api/dreams?limit=${limit}&offset=${offset}`);
+}
+
+/**
+ * Get compact Jungian reports for journal tab.
+ */
+async function getDreamReports(limit = 80, offset = 0) {
+    return apiRequest(`/api/dreams/reports?limit=${limit}&offset=${offset}`);
 }
 
 /**
