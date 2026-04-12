@@ -15,6 +15,26 @@ dreams_bp = Blueprint('dreams', __name__)
 sleep_analyzer = SleepAnalyzer()
 
 
+def _fallback_analysis(user_language):
+    """Return a safe analysis object when NLP services are unavailable."""
+    return {
+        'sentiment': 'neutral',
+        'sentiment_score': 0.0,
+        'primary_emotion': 'neutral',
+        'emotion_scores': {},
+        'keywords': [],
+        'entities': [],
+        'themes': ['general'],
+        'summary': 'Analysis temporarily unavailable. Dream was saved successfully.',
+        'interpretation': {
+            'overall_message': 'Analysis services are temporarily unavailable. Please try again later.'
+        },
+        'emotion_confidence': 0,
+        'detected_language': user_language,
+        'language_confidence': 0,
+    }
+
+
 def _compute_duration_hours(sleep_time, wake_time):
     """Compute duration in hours, handling overnight sleep windows."""
     if not sleep_time or not wake_time:
@@ -53,8 +73,13 @@ def create_dream():
         
         # Perform NLP analysis with language preference
         print(f"DEBUG: Starting NLP analysis in language: {user_language}...")
-        analysis = analyze_dream(content, user_language=user_language)
-        print("DEBUG: NLP analysis complete.")
+        try:
+            analysis = analyze_dream(content, user_language=user_language)
+            print("DEBUG: NLP analysis complete.")
+        except Exception as nlp_err:
+            # Do not fail dream creation if NLP models/services are unavailable.
+            print(f"WARNING: NLP analysis failed, using fallback analysis: {nlp_err}")
+            analysis = _fallback_analysis(user_language)
 
         # Generate Jungian psychology report for this dream and store it with the dream record.
         jungian_report = {}
