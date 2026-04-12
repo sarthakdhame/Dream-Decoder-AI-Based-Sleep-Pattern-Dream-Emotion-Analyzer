@@ -16,32 +16,61 @@ dreams_bp = Blueprint('dreams', __name__)
 sleep_analyzer = SleepAnalyzer()
 
 
-def _fallback_analysis(user_language):
-    """Return a safe analysis object when NLP services are unavailable."""
+def _fallback_analysis(content, user_language):
+    """
+    Return basic analysis when ML models are unavailable.
+    Extracts keywords and detects basic sentiment from text directly.
+    """
+    import re
+    text_lower = content.lower()
+    
+    # Basic keyword extraction - find capitalized words and common dream keywords
+    dream_keywords = [
+        'falling', 'flying', 'chased', 'running', 'trapped', 'lost', 'water', 'death',
+        'school', 'exam', 'test', 'monster', 'ghost', 'dark', 'house', 'car', 'crash',
+        'family', 'friend', 'baby', 'animal', 'fire', 'snake', 'chase', 'fear', 'scared'
+    ]
+    
+    found_keywords = [kw for kw in dream_keywords if kw in text_lower]
+    
+    # Simple sentiment detection based on keywords
+    negative_words = ['scary', 'afraid', 'terror', 'dangerous', 'death', 'dying', 'monster', 
+                      'ghost', 'fear', 'dark', 'nightmare', 'threat', 'attack', 'hurt', 'pain']
+    positive_words = ['happy', 'joy', 'love', 'beautiful', 'wonderful', 'amazing', 'flying', 
+                      'light', 'peace', 'calm', 'safe', 'friend', 'success']
+    
+    neg_count = sum(1 for word in negative_words if word in text_lower)
+    pos_count = sum(1 for word in positive_words if word in text_lower)
+    
+    if neg_count > pos_count:
+        sentiment = 'negative'
+        primary_emotion = 'fear' if 'fear' in text_lower or 'scary' in text_lower or 'nightmare' in text_lower else 'sadness'
+        sentiment_score = -0.7
+    elif pos_count > neg_count:
+        sentiment = 'positive'
+        primary_emotion = 'joy'
+        sentiment_score = 0.7
+    else:
+        sentiment = 'neutral'
+        primary_emotion = 'neutral'
+        sentiment_score = 0.0
+    
     return {
-        'sentiment': 'neutral',
-        'sentiment_score': 0.0,
-        'primary_emotion': 'neutral',
-        'emotion_scores': {},
-        'keywords': [],
+        'sentiment': sentiment,
+        'sentiment_score': sentiment_score,
+        'primary_emotion': primary_emotion,
+        'emotion_scores': {primary_emotion: 0.6} if primary_emotion != 'neutral' else {},
+        'keywords': found_keywords[:5] if found_keywords else ['dream'],
         'entities': [],
-        'themes': ['general'],
-        'summary': 'Analysis temporarily unavailable. Dream was saved successfully.',
+        'themes': ['nightmare' if sentiment == 'negative' else 'ordinary'],
+        'summary': f'Basic analysis: This dream has a {sentiment} tone with themes of {", ".join(found_keywords[:3]) if found_keywords else "dreams"}.',
         'interpretation': {
-            'overall_message': 'Analysis services are temporarily unavailable. Please try again later.'
+            'overall_message': 'Full analysis unavailable. Basic keywords and sentiment detected from text.'
         },
-        'emotion_confidence': 0,
+        'emotion_confidence': 0.5,
         'detected_language': user_language,
-        'language_confidence': 0,
+        'language_confidence': 0.8,
     }
-
-
-def _should_use_lightweight_analysis():
-    """Use lightweight analysis by default on Render unless explicitly overridden."""
-    enabled = os.getenv('ENABLE_HEAVY_NLP', '').strip().lower()
-    if enabled in ('1', 'true', 'yes', 'on'):
-        return False
-    return bool(os.getenv('RENDER'))
 
 
 def _compute_duration_hours(sleep_time, wake_time):
@@ -82,17 +111,13 @@ def create_dream():
         
         # Perform NLP analysis with language preference
         print(f"DEBUG: Starting NLP analysis in language: {user_language}...")
-        if _should_use_lightweight_analysis():
-            print("INFO: Using lightweight fallback analysis in Render production mode.")
-            analysis = _fallback_analysis(user_language)
-        else:
-            try:
-                analysis = analyze_dream(content, user_language=user_language)
-                print("DEBUG: NLP analysis complete.")
-            except Exception as nlp_err:
-                # Do not fail dream creation if NLP models/services are unavailable.
-                print(f"WARNING: NLP analysis failed, using fallback analysis: {nlp_err}")
-                analysis = _fallback_analysis(user_language)
+        try:
+            analysis = analyze_dream(content, user_language=user_language)
+            print("DEBUG: NLP analysis complete.")
+        except Exception as nlp_err:
+            # Do not fail dream creation if NLP models/services are unavailable.
+            print(f"WARNING: NLP analysis failed, using fallback analysis: {nlp_err}")
+            analysis = _fallback_analysis(content, user_language)
 
         # Generate Jungian psychology report for this dream and store it with the dream record.
         jungian_report = {}
