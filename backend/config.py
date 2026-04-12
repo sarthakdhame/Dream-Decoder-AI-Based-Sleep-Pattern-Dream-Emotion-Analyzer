@@ -18,6 +18,7 @@ PORT = int(os.environ.get('PORT', 5000))
 _default_cors_origins = [
     'https://dreamdecoder.vercel.app',
     'https://dreamdecoder-chi.vercel.app',
+    'https://dream-decoder-ai-based-sleep-patter.vercel.app',
     'https://dream-decoder-7fy3.onrender.com',
     'https://dream-decoder-701m.onrender.com',
     # Allow future Render frontend URLs for this project pattern.
