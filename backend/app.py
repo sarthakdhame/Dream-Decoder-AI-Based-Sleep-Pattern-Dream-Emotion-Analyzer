@@ -33,6 +33,9 @@ def create_app():
         app,
         resources={r"/*": {"origins": CORS_ORIGINS}},
         supports_credentials=True,
+        allow_headers='*',
+        expose_headers=['Content-Type', 'Authorization'],
+        methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
         always_send=True
     )
 
@@ -86,6 +89,15 @@ def create_app():
             response.headers['Access-Control-Allow-Origin'] = origin
             response.headers['Access-Control-Allow-Credentials'] = 'true'
             response.headers['Vary'] = 'Origin'
+
+            # Ensure browser preflight requests always receive allowed headers/methods.
+            requested_headers = request.headers.get('Access-Control-Request-Headers')
+            if requested_headers:
+                response.headers['Access-Control-Allow-Headers'] = requested_headers
+            else:
+                response.headers['Access-Control-Allow-Headers'] = 'Authorization, Content-Type'
+
+            response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD'
 
         if 'Cache-Control' not in response.headers:
             # Cache static assets for 1 day
