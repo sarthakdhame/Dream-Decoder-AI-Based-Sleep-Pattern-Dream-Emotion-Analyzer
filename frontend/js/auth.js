@@ -7,7 +7,7 @@ class AuthService {
     constructor() {
         this.TOKEN_KEY = 'dream_decoder_token';
         this.USER_KEY = 'dream_decoder_user';
-        this.RENDER_BACKEND_URL = 'https://dream-decoder-701m.onrender.com';
+        this.DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-701m.onrender.com';
     }
 
     /**
@@ -16,11 +16,19 @@ class AuthService {
     async _fetch(endpoint, options) {
         try {
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const overrideBase = (typeof window !== 'undefined' && window.localStorage)
+                ? window.localStorage.getItem('dream_decoder_api_base')
+                : '';
+            const runtimeBase = (typeof window !== 'undefined' && window.DREAM_DECODER_API_BASE)
+                ? window.DREAM_DECODER_API_BASE
+                : '';
             const baseUrl = typeof API_BASE !== 'undefined'
                 ? API_BASE
-                : (isLocal ? '' : this.RENDER_BACKEND_URL);
+                : (isLocal ? '' : (overrideBase || runtimeBase || this.DEFAULT_RENDER_BACKEND_URL).replace(/\/+$/, ''));
             const url = `${baseUrl}${endpoint}`;
-            return await fetch(url, options);
+            const response = await fetch(url, options);
+            response.__requestUrl = url;
+            return response;
         } catch (error) {
             if (error.message === 'Failed to fetch') {
                 throw new Error('Could not connect to the server. Please ensure the backend is running.');
@@ -41,7 +49,8 @@ class AuthService {
         const text = await response.text();
         if (!response.ok) {
             if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-                throw new Error('Server returned HTML instead of JSON. Verify frontend API base URL points to backend deployment.');
+                const requestUrl = response.__requestUrl || 'unknown URL';
+                throw new Error(`Server returned HTML instead of JSON from ${requestUrl}. Backend URL is incorrect or endpoint is missing.`);
             }
             throw new Error(text || 'Unexpected server response');
         }

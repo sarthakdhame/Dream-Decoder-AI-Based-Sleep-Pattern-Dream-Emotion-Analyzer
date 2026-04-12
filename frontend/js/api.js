@@ -3,10 +3,17 @@
  * Handles all API communication with the backend
  */
 
-const RENDER_BACKEND_URL = 'https://dream-decoder-701m.onrender.com';
+const DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-701m.onrender.com';
+const OVERRIDE_API_BASE = (typeof window !== 'undefined' && window.localStorage)
+    ? window.localStorage.getItem('dream_decoder_api_base')
+    : '';
+const RUNTIME_API_BASE = (typeof window !== 'undefined' && window.DREAM_DECODER_API_BASE)
+    ? window.DREAM_DECODER_API_BASE
+    : '';
+const PROD_API_BASE = (OVERRIDE_API_BASE || RUNTIME_API_BASE || DEFAULT_RENDER_BACKEND_URL).replace(/\/+$/, '');
 const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? ''
-    : RENDER_BACKEND_URL;
+    : PROD_API_BASE;
 
 /**
  * Make an API request with error handling
@@ -43,7 +50,7 @@ async function apiRequest(endpoint, options = {}) {
         } else {
             const text = await response.text();
             console.error('Non-JSON response received:', text.substring(0, 200));
-            throw new Error(`Server returned non-JSON response (${response.status}). Please check if the backend is running correctly.`);
+            throw new Error(`Server returned non-JSON response (${response.status}) from ${url}. Set correct backend URL using localStorage key "dream_decoder_api_base" if needed.`);
         }
 
         if (!response.ok) {
