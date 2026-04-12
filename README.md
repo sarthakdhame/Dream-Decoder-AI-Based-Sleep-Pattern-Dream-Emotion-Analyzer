@@ -56,10 +56,14 @@ CORS_ORIGINS=*
 
 ## Deployment Notes
 
-- Root `app.py` exports Flask app for runtime discovery.
-- For Vercel/Python deployments, ensure environment variables are set in project settings.
-- Deployed backend URL: `https://dream-decoder-701m.onrender.com`
-- Frontend API client is configured to call this Render backend when not running on localhost.
+- `backend/app.py` is the canonical Flask app.
+- Root `app.py` is a thin wrapper for platform runtime discovery (`gunicorn app:app`).
+- Deployed backend URL: `https://dream-decoder-7fy3.onrender.com`
+- Frontend API client uses same-origin on Render and this backend URL for non-Render hosts.
+- Recommended Render backend settings:
+	- Root Directory: repository root
+	- Build Command: `pip install -r requirements.txt`
+	- Start Command: `gunicorn app:app --bind 0.0.0.0:$PORT`
 - Do not commit real secrets.
 
 ## Maintenance Scripts
