@@ -4,13 +4,10 @@
  */
 
 const DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-7fy3.onrender.com';
-const OVERRIDE_API_BASE = (typeof window !== 'undefined' && window.localStorage)
-    ? window.localStorage.getItem('dream_decoder_api_base')
-    : '';
 const RUNTIME_API_BASE = (typeof window !== 'undefined' && window.DREAM_DECODER_API_BASE)
     ? window.DREAM_DECODER_API_BASE
     : '';
-const PROD_API_BASE = (OVERRIDE_API_BASE || RUNTIME_API_BASE || DEFAULT_RENDER_BACKEND_URL).replace(/\/+$/, '');
+const PROD_API_BASE = (RUNTIME_API_BASE || DEFAULT_RENDER_BACKEND_URL).replace(/\/+$/, '');
 const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 const isRenderHost = window.location.hostname.endsWith('.onrender.com');
 const API_BASE = (isLocalHost || isRenderHost)
@@ -52,7 +49,7 @@ async function apiRequest(endpoint, options = {}) {
         } else {
             const text = await response.text();
             console.error('Non-JSON response received:', text.substring(0, 200));
-            throw new Error(`Server returned non-JSON response (${response.status}) from ${url}. Set correct backend URL using localStorage key "dream_decoder_api_base" if needed.`);
+            throw new Error(`Server returned non-JSON response (${response.status}) from ${url}. Verify backend deployment URL and route availability.`);
         }
 
         if (!response.ok) {

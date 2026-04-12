@@ -17,15 +17,12 @@ class AuthService {
         try {
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             const isRenderHost = window.location.hostname.endsWith('.onrender.com');
-            const overrideBase = (typeof window !== 'undefined' && window.localStorage)
-                ? window.localStorage.getItem('dream_decoder_api_base')
-                : '';
             const runtimeBase = (typeof window !== 'undefined' && window.DREAM_DECODER_API_BASE)
                 ? window.DREAM_DECODER_API_BASE
                 : '';
             const baseUrl = typeof API_BASE !== 'undefined'
                 ? API_BASE
-                : ((isLocal || isRenderHost) ? '' : (overrideBase || runtimeBase || this.DEFAULT_RENDER_BACKEND_URL).replace(/\/+$/, ''));
+                : ((isLocal || isRenderHost) ? '' : (runtimeBase || this.DEFAULT_RENDER_BACKEND_URL).replace(/\/+$/, ''));
             const url = `${baseUrl}${endpoint}`;
             const response = await fetch(url, options);
             response.__requestUrl = url;
