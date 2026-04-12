@@ -58,7 +58,7 @@ CORS_ORIGINS=*
 
 - `backend/app.py` is the canonical Flask app.
 - Root `app.py` is a thin wrapper for platform runtime discovery (`gunicorn app:app`).
-- Deployed backend URL: `https://dream-decoder-7fy3.onrender.com`
+- Deployed backend URL: `https://dream-decoder-ai-based-sleep-pattern.onrender.com`
 - Frontend API client uses same-origin on Render and this backend URL for non-Render hosts.
 - Recommended Render backend settings:
 	- Root Directory: repository root

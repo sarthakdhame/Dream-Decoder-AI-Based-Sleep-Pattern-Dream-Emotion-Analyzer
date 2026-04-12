@@ -3,7 +3,7 @@
  * Handles all API communication with the backend
  */
 
-const DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-7fy3.onrender.com';
+const DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-ai-based-sleep-pattern.onrender.com';
 const RUNTIME_API_BASE = (typeof window !== 'undefined' && window.DREAM_DECODER_API_BASE)
     ? window.DREAM_DECODER_API_BASE
     : '';

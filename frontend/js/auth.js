@@ -7,7 +7,7 @@ class AuthService {
     constructor() {
         this.TOKEN_KEY = 'dream_decoder_token';
         this.USER_KEY = 'dream_decoder_user';
-        this.DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-7fy3.onrender.com';
+        this.DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-ai-based-sleep-pattern.onrender.com';
     }
 
     /**
