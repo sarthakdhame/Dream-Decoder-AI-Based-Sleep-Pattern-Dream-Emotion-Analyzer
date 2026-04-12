@@ -2052,6 +2052,30 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 /* ========================================
+   SITE FOOTER
+   ======================================== */
+.site-footer {
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.55;
+    border-top: 1px solid rgba(170, 176, 197, 0.2);
+    background: rgba(11, 15, 26, 0.35);
+    border-radius: var(--radius-md);
+}
+
+.site-footer p {
+    margin: 0;
+}
+
+.site-footer p+p {
+    margin-top: 4px;
+}
+
+/* ========================================
    RESPONSIVE ADJUSTMENTS
    ======================================== */
 @media (max-width: 768px) {
@@ -2083,6 +2107,12 @@ input[type="range"]::-webkit-slider-thumb {
 
     .toast {
         max-width: none;
+    }
+
+    .site-footer {
+        margin-bottom: 86px;
+        padding: var(--space-md);
+        font-size: 0.82rem;
     }
 }
 
