@@ -121,6 +121,13 @@ def _compute_duration_hours(sleep_time, wake_time):
     return (wake_dt - sleep_dt).total_seconds() / 3600.0
 
 
+def _should_use_fallback_only():
+    """Use fallback-only mode on Render unless explicitly disabled."""
+    heavy_nlp_enabled = os.getenv('ENABLE_HEAVY_NLP', '').strip().lower() in ('1', 'true', 'yes', 'on')
+    running_on_render = bool(os.getenv('RENDER'))
+    return running_on_render and not heavy_nlp_enabled
+
+
 @dreams_bp.route('/api/dreams', methods=['POST'])
 @require_auth
 def create_dream():
@@ -147,13 +154,17 @@ def create_dream():
         
         # Perform NLP analysis with language preference
         print(f"DEBUG: Starting NLP analysis in language: {user_language}...")
-        try:
-            analysis = analyze_dream(content, user_language=user_language)
-            print("DEBUG: NLP analysis complete.")
-        except Exception as nlp_err:
-            # Do not fail dream creation if NLP models/services are unavailable.
-            print(f"WARNING: NLP analysis failed, using fallback analysis: {nlp_err}")
+        if _should_use_fallback_only():
+            print("INFO: Render safe mode active. Using fallback analysis.")
             analysis = _fallback_analysis(content, user_language)
+        else:
+            try:
+                analysis = analyze_dream(content, user_language=user_language)
+                print("DEBUG: NLP analysis complete.")
+            except Exception as nlp_err:
+                # Do not fail dream creation if NLP models/services are unavailable.
+                print(f"WARNING: NLP analysis failed, using fallback analysis: {nlp_err}")
+                analysis = _fallback_analysis(content, user_language)
 
         # Generate Jungian psychology report for this dream and store it with the dream record.
         jungian_report = {}
