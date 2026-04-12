@@ -7,7 +7,7 @@ class AuthService {
     constructor() {
         this.TOKEN_KEY = 'dream_decoder_token';
         this.USER_KEY = 'dream_decoder_user';
-        this.DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-701m.onrender.com';
+        this.DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-7fy3.onrender.com';
     }
 
     /**
@@ -16,6 +16,7 @@ class AuthService {
     async _fetch(endpoint, options) {
         try {
             const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const isRenderHost = window.location.hostname.endsWith('.onrender.com');
             const overrideBase = (typeof window !== 'undefined' && window.localStorage)
                 ? window.localStorage.getItem('dream_decoder_api_base')
                 : '';
@@ -24,7 +25,7 @@ class AuthService {
                 : '';
             const baseUrl = typeof API_BASE !== 'undefined'
                 ? API_BASE
-                : (isLocal ? '' : (overrideBase || runtimeBase || this.DEFAULT_RENDER_BACKEND_URL).replace(/\/+$/, ''));
+                : ((isLocal || isRenderHost) ? '' : (overrideBase || runtimeBase || this.DEFAULT_RENDER_BACKEND_URL).replace(/\/+$/, ''));
             const url = `${baseUrl}${endpoint}`;
             const response = await fetch(url, options);
             response.__requestUrl = url;

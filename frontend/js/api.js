@@ -3,7 +3,7 @@
  * Handles all API communication with the backend
  */
 
-const DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-701m.onrender.com';
+const DEFAULT_RENDER_BACKEND_URL = 'https://dream-decoder-7fy3.onrender.com';
 const OVERRIDE_API_BASE = (typeof window !== 'undefined' && window.localStorage)
     ? window.localStorage.getItem('dream_decoder_api_base')
     : '';
@@ -11,7 +11,9 @@ const RUNTIME_API_BASE = (typeof window !== 'undefined' && window.DREAM_DECODER_
     ? window.DREAM_DECODER_API_BASE
     : '';
 const PROD_API_BASE = (OVERRIDE_API_BASE || RUNTIME_API_BASE || DEFAULT_RENDER_BACKEND_URL).replace(/\/+$/, '');
-const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const isRenderHost = window.location.hostname.endsWith('.onrender.com');
+const API_BASE = (isLocalHost || isRenderHost)
     ? ''
     : PROD_API_BASE;
 
