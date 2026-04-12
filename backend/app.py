@@ -4,6 +4,7 @@ Main entry point for the backend server
 """
 import os
 import sys
+import re
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -31,8 +32,29 @@ def create_app():
     CORS(
         app,
         resources={r"/*": {"origins": CORS_ORIGINS}},
-        supports_credentials=True
+        supports_credentials=True,
+        always_send=True
     )
+
+    def _origin_allowed(origin):
+        """Check whether request origin is allowed by configured CORS origins."""
+        if not origin:
+            return False
+
+        if CORS_ORIGINS == '*':
+            return True
+
+        for allowed in CORS_ORIGINS:
+            if allowed == origin:
+                return True
+            # Support regex-style origin entries configured in CORS_ORIGINS.
+            if any(ch in allowed for ch in ['*', '\\', '.', '^', '$', '?', '+', '[', ']', '(', ')', '|']):
+                try:
+                    if re.fullmatch(allowed, origin):
+                        return True
+                except re.error:
+                    continue
+        return False
     
     # Initialize database
     init_db()
@@ -59,6 +81,12 @@ def create_app():
     @app.after_request
     def add_header(response):
         """Add headers to both force latest IE rendering engine or to cache static assets."""
+        origin = request.headers.get('Origin')
+        if _origin_allowed(origin):
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Access-Control-Allow-Credentials'] = 'true'
+            response.headers['Vary'] = 'Origin'
+
         if 'Cache-Control' not in response.headers:
             # Cache static assets for 1 day
             if request.path.endswith(('.css', '.js', '.png', '.jpg', '.jpeg', '.gif', '.svg', '.ico')):
