@@ -39,24 +39,41 @@ def create_app():
         always_send=True
     )
 
+    def _normalize_origin(value):
+        """Normalize origin strings for reliable matching."""
+        if not isinstance(value, str):
+            return ''
+        return value.strip().strip('"').strip("'").rstrip('/').lower()
+
     def _origin_allowed(origin):
         """Check whether request origin is allowed by configured CORS origins."""
-        if not origin:
+        origin_norm = _normalize_origin(origin)
+        if not origin_norm:
             return False
 
         if CORS_ORIGINS == '*':
             return True
 
         for allowed in CORS_ORIGINS:
-            if allowed == origin:
+            allowed_norm = _normalize_origin(allowed)
+            if not allowed_norm:
+                continue
+
+            if allowed_norm == origin_norm:
                 return True
+
             # Support regex-style origin entries configured in CORS_ORIGINS.
             if any(ch in allowed for ch in ['*', '\\', '.', '^', '$', '?', '+', '[', ']', '(', ')', '|']):
                 try:
-                    if re.fullmatch(allowed, origin):
+                    if re.fullmatch(allowed, origin_norm):
                         return True
                 except re.error:
                     continue
+
+        # Safety fallback for current deployment domains.
+        if origin_norm.endswith('.vercel.app') or origin_norm.endswith('.onrender.com'):
+            return True
+
         return False
     
     # Initialize database

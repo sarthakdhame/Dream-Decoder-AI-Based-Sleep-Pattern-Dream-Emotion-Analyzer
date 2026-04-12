@@ -2,6 +2,7 @@
 Dream Decoder - Dream Routes
 API endpoints for dream CRUD operations
 """
+import os
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from backend.models.dream import Dream
@@ -33,6 +34,14 @@ def _fallback_analysis(user_language):
         'detected_language': user_language,
         'language_confidence': 0,
     }
+
+
+def _should_use_lightweight_analysis():
+    """Use lightweight analysis by default on Render unless explicitly overridden."""
+    enabled = os.getenv('ENABLE_HEAVY_NLP', '').strip().lower()
+    if enabled in ('1', 'true', 'yes', 'on'):
+        return False
+    return bool(os.getenv('RENDER'))
 
 
 def _compute_duration_hours(sleep_time, wake_time):
@@ -73,13 +82,17 @@ def create_dream():
         
         # Perform NLP analysis with language preference
         print(f"DEBUG: Starting NLP analysis in language: {user_language}...")
-        try:
-            analysis = analyze_dream(content, user_language=user_language)
-            print("DEBUG: NLP analysis complete.")
-        except Exception as nlp_err:
-            # Do not fail dream creation if NLP models/services are unavailable.
-            print(f"WARNING: NLP analysis failed, using fallback analysis: {nlp_err}")
+        if _should_use_lightweight_analysis():
+            print("INFO: Using lightweight fallback analysis in Render production mode.")
             analysis = _fallback_analysis(user_language)
+        else:
+            try:
+                analysis = analyze_dream(content, user_language=user_language)
+                print("DEBUG: NLP analysis complete.")
+            except Exception as nlp_err:
+                # Do not fail dream creation if NLP models/services are unavailable.
+                print(f"WARNING: NLP analysis failed, using fallback analysis: {nlp_err}")
+                analysis = _fallback_analysis(user_language)
 
         # Generate Jungian psychology report for this dream and store it with the dream record.
         jungian_report = {}
