@@ -24,8 +24,12 @@ from backend.routes.auth import auth_bp
 # Create and configure Flask app
 app = Flask(__name__, static_folder="frontend", static_url_path="")
 
-# Enable CORS with production origins
-CORS(app, origins=CORS_ORIGINS)
+# Enable CORS with explicit resources and credentials support for preflight requests.
+CORS(
+    app,
+    resources={r"/*": {"origins": CORS_ORIGINS}},
+    supports_credentials=True
+)
 
 # Initialize database
 init_db()

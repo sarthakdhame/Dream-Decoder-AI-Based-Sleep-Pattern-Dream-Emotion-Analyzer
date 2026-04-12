@@ -27,8 +27,12 @@ def create_app():
                 static_folder='../frontend',
                 static_url_path='')
     
-    # Enable CORS
-    CORS(app, origins=CORS_ORIGINS)
+    # Enable CORS with explicit resources and credentials support for preflight requests.
+    CORS(
+        app,
+        resources={r"/*": {"origins": CORS_ORIGINS}},
+        supports_credentials=True
+    )
     
     # Initialize database
     init_db()
