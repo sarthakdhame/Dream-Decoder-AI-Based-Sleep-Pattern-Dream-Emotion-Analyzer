@@ -237,9 +237,8 @@ async function getJungianAnalysis(text) {
 }
 
 
-// ==========================================
 // INSIGHTS API
-// ==========================================
+
 
 /**
  * Get personalized insights
@@ -255,9 +254,8 @@ async function getTrends(days = 30) {
     return apiRequest(`/api/trends?days=${days}`);
 }
 
-// ==========================================
+
 // HEALTH CHECK
-// ==========================================
 
 /**
  * Check if API is healthy

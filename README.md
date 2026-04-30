@@ -65,6 +65,10 @@ CORS_ORIGINS=*
 	- Root Directory: repository root
 	- Build Command: `pip install -r requirements.txt`
 	- Start Command: `gunicorn app:app --bind 0.0.0.0:$PORT`
+- To keep user accounts, dreams, and sleep records until the user deletes the account, the backend must use persistent storage.
+	- Set `DATABASE_PATH` to a mounted persistent disk path, or set `DATABASE_DIR`, `PERSISTENT_DATA_DIR`, or `RENDER_DISK_MOUNT_PATH`.
+	- Example: `/var/data/dream_decoder.db` or a similar persistent volume path provided by your host.
+	- If the app runs on an ephemeral filesystem, data can disappear after restarts or redeploys.
 - Do not commit real secrets.
 
 ## Maintenance Scripts

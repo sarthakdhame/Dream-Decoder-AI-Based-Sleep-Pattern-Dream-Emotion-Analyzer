@@ -3,9 +3,6 @@
  * UI logic and event handling
  */
 
-// ==========================================
-// INITIALIZATION
-// ==========================================
 
 let lastDreamText = ''; // Store the latest dream text for Jungian analysis
 let dreamJournalCache = [];

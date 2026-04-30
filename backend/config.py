@@ -7,7 +7,23 @@ import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Database
-DATABASE_PATH = os.path.join(BASE_DIR, '..', 'data', 'dream_decoder.db')
+_default_database_path = os.path.join(BASE_DIR, '..', 'data', 'dream_decoder.db')
+# Allow deployments to point at a persistent disk or shared volume.
+_database_dir = (
+    os.environ.get('DATABASE_DIR')
+    or os.environ.get('PERSISTENT_DATA_DIR')
+    or os.environ.get('RENDER_DISK_MOUNT_PATH')
+)
+
+if os.environ.get('DATABASE_PATH'):
+    DATABASE_PATH = os.path.abspath(os.environ['DATABASE_PATH'])
+elif _database_dir:
+    DATABASE_PATH = os.path.abspath(os.path.join(_database_dir, 'dream_decoder.db'))
+elif os.environ.get('RENDER'):
+    # Render disks commonly mount at /var/data.
+    DATABASE_PATH = '/var/data/dream_decoder.db'
+else:
+    DATABASE_PATH = os.path.abspath(_default_database_path)
 
 # Flask settings
 DEBUG = True

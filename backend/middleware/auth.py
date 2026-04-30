@@ -16,11 +16,13 @@ JWT_ALGORITHM = 'HS256'
 def generate_token(user_id, username):
     """Generate a JWT token for a user."""
     import datetime
+
+    token_lifetime_days = 183  # About 6 months
     
     payload = {
         'user_id': user_id,
         'username': username,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7),  # Token expires in 7 days
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(days=token_lifetime_days),
         'iat': datetime.datetime.utcnow()
     }
     

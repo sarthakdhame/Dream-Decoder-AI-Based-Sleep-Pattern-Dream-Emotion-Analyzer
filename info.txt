@@ -1,0 +1,347 @@
+Dream Decoder - Project Information
+
+1. Project Overview
+Dream Decoder is a full-stack web application for dream journaling, sleep tracking, multilingual dream analysis,
+ emotional interpretation, and personalized insights. It is designed to help users record dreams and sleep data,
+ then analyze that data using natural language processing,
+sentiment analysis, emotion detection, and Jungian-style interpretation.
+
+2. What the Project Uses
+Backend:
+- Python
+- Flask
+- SQLite
+- Flask-CORS
+- python-dotenv
+- PyJWT
+- bcrypt
+- transformers
+- torch
+- spaCy
+- google-generativeai
+- googletrans
+- langdetect
+- python-dateutil
+- fpdf2
+- gunicorn
+
+Frontend:
+- HTML
+- CSS
+- Vanilla JavaScript
+- Chart.js
+
+Deployment and runtime:
+- Gunicorn for production serving
+- Vercel config for frontend/platform routing
+- Render-compatible backend setup
+- Windows batch scripts for local setup and startup
+
+3. Main Project Purpose
+The application combines three main ideas:
+- Dream journaling and analysis
+- Sleep logging and sleep quality tracking
+- AI-assisted interpretation and insights
+
+It stores user dreams and sleep records, analyzes text for sentiment, emotions,
+ keywords, and symbols, and presents charts and insights in the browser.
+
+4. Backend Architecture
+The backend is organized under the backend/ folder and follows a modular Flask structure.
+
+4.1 Entry Point
+File:
+- app.py
+- backend/app.py
+
+Why it exists:
+- backend/app.py is the main Flask application
+- root app.py is a thin wrapper used by deployment platforms such as Gunicorn and Vercel
+- it initializes the app, registers routes, enables CORS, serves the frontend, and exposes the health check endpoint
+
+4.2 Configuration
+File:
+- backend/config.py
+
+What it contains:
+- database path
+- host and port settings
+- CORS origin list
+- NLP model names
+- common dream theme keywords
+
+Why it is used:
+- keeps environment-specific settings in one place
+- makes deployment and local development easier
+- centralizes model and CORS configuration
+
+4.3 Database Layer
+File:
+- backend/database/db.py
+
+What it does:
+- creates and connects to the SQLite database
+- initializes tables if they do not exist
+- handles migration of older databases
+- provides the database path used by the app
+
+Tables used:
+- users
+- dreams
+- sleep_records
+
+Why it is used:
+- stores user accounts, dreams, and sleep logs locally in SQLite
+- keeps the project lightweight and easy to run without an external database server
+
+4.4 Authentication Layer
+Files:
+- backend/middleware/auth.py
+- backend/routes/auth.py
+- backend/models/user.py
+
+What it does:
+- creates and validates JWT tokens
+- protects private endpoints
+- supports signup, login, logout, account deletion, and language preference updates
+
+Why it is used:
+- keeps each user’s dreams and sleep records private
+- allows secure access to personal data and insights
+
+4.5 Route Layer
+Files:
+- backend/routes/dreams.py
+- backend/routes/sleep.py
+- backend/routes/analysis.py
+- backend/routes/insights.py
+- backend/routes/auth.py
+
+What each route module does:
+- dreams.py: dream creation, retrieval, deletion, recent dreams, report management
+- sleep.py: sleep record creation, listing, deletion, recent sleep data, sleep statistics
+- analysis.py: text-only analysis without saving, including Jungian analysis preview
+- insights.py: personalized insights and trend data for charts
+- auth.py: account creation, login, current user lookup, logout, language updates, account deletion
+
+Why they are used:
+- each route module separates one business area
+- keeps the API easier to maintain and expand
+- matches the frontend features one-to-one
+
+4.6 Service Layer
+Files:
+- backend/services/nlp_engine.py
+- backend/services/sentiment_analyzer.py
+- backend/services/emotion_analyzer.py
+- backend/services/keyword_extractor.py
+- backend/services/language_detector.py
+- backend/services/translations.py
+- backend/services/jungian_analyzer.py
+- backend/services/dream_interpreter.py
+- backend/services/dream_symbols.py
+- backend/services/sleep_analyzer.py
+- backend/services/insights_generator.py
+- backend/services/pdf_generator.py
+- backend/services/google-related model integration used inside analysis services
+
+What these services do:
+- NLP engine: main dream analysis pipeline
+- Sentiment analyzer: detects emotional polarity in dream text
+- Emotion analyzer: identifies emotions such as joy, fear, sadness, anger, surprise, and neutral
+- Keyword extractor: finds important dream keywords and symbols
+- Language detector: identifies English, Hindi, Marathi, and Hinglish content
+- Translations: helps normalize or process multilingual text
+- Jungian analyzer: generates Jungian-style interpretation, often using Gemini with fallback behavior
+- Dream interpreter and dream symbols: help interpret dream content and symbols
+- Sleep analyzer: interprets sleep-related data and supports the sleep feature
+- Insights generator: builds personalized insights and trend summaries
+- PDF generator: supports exporting report-like output
+
+Why they are used:
+- the project needs separate analyzers for text, emotion, language, and sleep patterns
+- modular services make it easier to swap models or add fallback logic
+- the app can still work when advanced AI services are unavailable
+
+4.7 NLP Models Used and Where They Are Used
+Model / service file mapping:
+- backend/config.py: stores the model names used by the NLP pipeline
+   - EMOTION_MODEL = AnasAlokla/multilingual_go_emotions
+   - SENTIMENT_MODEL = lxyuan/distilbert-base-multilingual-cased-sentiments-student
+   - SPACY_MODEL = en_core_web_sm
+
+- backend/services/emotion_analyzer.py:
+   - loads EMOTION_MODEL through HuggingFace transformers pipeline()
+   - used for emotion detection in dream text
+   - purpose: identify core emotions such as joy, fear, sadness, anger, surprise, love, and neutral
+
+- backend/services/sentiment_analyzer.py:
+   - loads SENTIMENT_MODEL through HuggingFace transformers pipeline()
+   - used for sentiment classification in dream text
+   - purpose: decide whether a dream is positive, negative, or neutral
+
+- backend/services/keyword_extractor.py:
+   - loads SPACY_MODEL through spaCy
+   - used for noun chunk extraction, entity recognition, and keyword extraction
+   - purpose: find important dream symbols, people, places, actions, and recurring themes
+
+- backend/services/nlp_engine.py:
+   - orchestrates emotion_analyzer.py, sentiment_analyzer.py, and keyword_extractor.py
+   - used as the main NLP entry point for the dream analysis pipeline
+   - purpose: combine multiple NLP results into one analysis response
+
+- backend/services/jungian_analyzer.py:
+   - uses Google Gemini models through google-generativeai
+   - model candidates: gemini-2.5-flash, gemini-1.5-flash, gemini-1.5-pro
+   - purpose: generate the Jungian-style interpretation report
+
+- backend/services/language_detector.py:
+   - uses langdetect
+   - used to detect English, Hindi, Marathi, and Hinglish text
+   - purpose: choose the right language path or fallback behavior for multilingual input
+
+Why this matters:
+- the app does not use one single NLP model for everything
+- each file handles one analysis task so the system stays modular and easier to maintain
+- fallback logic in backend/services/nlp_engine.py and backend/services/jungian_analyzer.py keeps the app working even when a model or API is unavailable
+
+5. Frontend Architecture
+The frontend is stored in the frontend/ folder and is a static single-page-style interface built with plain HTML, CSS, and JavaScript.
+
+5.1 Frontend Entry Files
+Files:
+- frontend/index.html
+- frontend/login.html
+
+Why they are used:
+- index.html is the main application interface
+- login.html handles authentication UI
+
+5.2 Frontend JavaScript
+Files:
+- frontend/js/app.js
+- frontend/js/api.js
+- frontend/js/auth.js
+- frontend/js/auth-init.js
+- frontend/js/charts.js
+- frontend/js/i18n.js
+
+What they do:
+- app.js: main UI logic, tab switching, forms, data loading, and user interactions
+- api.js: all backend API calls and request handling
+- auth.js: client-side auth session handling
+- auth-init.js: bootstraps authentication state on page load
+- charts.js: Chart.js visualizations for emotions, sleep, trends, and summaries
+- i18n.js: multilingual UI text handling
+
+Why they are used:
+- keeps the frontend modular instead of putting all logic in one file
+- separates UI behavior, API communication, chart rendering, and localization
+- makes the app easier to debug and extend
+
+5.3 Frontend CSS
+Files:
+- frontend/css/styles.css
+- frontend/css/auth.css
+
+Why they are used:
+- styles.css controls the main application layout and design
+- auth.css controls login and signup pages
+- separate stylesheets keep auth pages and app pages easier to maintain
+
+6. How the App Works
+Typical flow:
+1. User signs up or logs in.
+2. The backend creates a JWT token and returns the user profile.
+3. The frontend stores the token and sends it with protected API calls.
+4. The user saves a dream or sleep record.
+5. The backend stores the data in SQLite.
+6. The NLP and Jungian services analyze the dream text.
+7. The frontend displays results, charts, and insights.
+
+7. Why Each Main Technology Was Chosen
+Flask:
+- lightweight and simple for building API endpoints and serving static files
+
+SQLite:
+- easy local database with no external setup required
+
+JWT and bcrypt:
+- secure authentication and password hashing
+
+Transformers and spaCy:
+- support text analysis, keyword extraction, and NLP-based processing
+
+Gemini / google-generativeai:
+- used for richer Jungian interpretation and AI-style analysis
+
+Vanilla JavaScript:
+- keeps the frontend lightweight and easy to deploy
+
+Chart.js:
+- used to visualize dream and sleep trends clearly
+
+python-dotenv:
+- loads environment variables from a local .env file
+
+Gunicorn:
+- production-ready Python WSGI server for deployment
+
+8. Important Features
+- Dream journal with analysis
+- Sleep record tracking
+- Sentiment analysis
+- Emotion detection
+- Keyword extraction
+- Jungian interpretation
+- Multilingual support
+- Insights dashboard
+- Trend charts
+- Protected user accounts
+- Account deletion and language preference settings
+- Fallback analysis when advanced AI services are unavailable
+
+9. Deployment Details
+Files:
+- Procfile
+- vercel.json
+- runtime.txt
+- backend/runtime.txt
+- requirements.txt
+- backend/requirements.txt
+
+What they do:
+- Procfile tells production platforms how to run the app with Gunicorn
+- vercel.json routes all requests to app.py for serverless-style deployment
+- runtime.txt files specify the Python version
+- requirements files list Python dependencies for the backend
+
+10. Local Development Setup
+Files:
+- setup.bat
+- start.bat
+- reset_db.bat
+
+Purpose:
+- setup.bat prepares the project environment
+- start.bat runs the app locally
+- reset_db.bat clears or resets the database during development/testing
+
+11. Testing and Validation
+Folders and files:
+- tests/
+- backend/regression_test.py
+- scripts/verification and debug utilities
+
+Why they are included:
+- verify expected behavior
+- help debug NLP, multilingual, and production issues
+- support regression testing as the app evolves
+
+12. Project Summary
+Dream Decoder is a Flask and JavaScript-based dream and sleep analysis platform that combines secure user accounts,
+ local database storage, multilingual NLP, emotion detection, Jungian interpretation,
+  and dashboard-style analytics. It is structured so that the backend handles all data processing and analysis,
+   while the frontend handles user interaction, charts, and API communication.
+
+End of project information.
