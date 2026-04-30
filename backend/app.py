@@ -45,37 +45,6 @@ def create_app():
             return ''
         return value.strip().strip('"').strip("'").rstrip('/').lower()
 
-    def _origin_allowed(origin):
-        """Check whether request origin is allowed by configured CORS origins."""
-        origin_norm = _normalize_origin(origin)
-        if not origin_norm:
-            return False
-
-        if CORS_ORIGINS == '*':
-            return True
-
-        for allowed in CORS_ORIGINS:
-            allowed_norm = _normalize_origin(allowed)
-            if not allowed_norm:
-                continue
-
-            if allowed_norm == origin_norm:
-                return True
-
-            # Support regex-style origin entries configured in CORS_ORIGINS.
-            if any(ch in allowed for ch in ['*', '\\', '.', '^', '$', '?', '+', '[', ']', '(', ')', '|']):
-                try:
-                    if re.fullmatch(allowed, origin_norm):
-                        return True
-                except re.error:
-                    continue
-
-        # Safety fallback for current deployment domains.
-        if origin_norm.endswith('.vercel.app') or origin_norm.endswith('.onrender.com'):
-            return True
-
-        return False
-
     @app.before_request
     def handle_preflight_requests():
         """Respond to preflight requests early so the browser gets CORS headers consistently."""
@@ -83,14 +52,12 @@ def create_app():
             response = app.make_default_options_response()
             origin = request.headers.get('Origin')
             if origin:
-                origin_norm = _normalize_origin(origin)
-                if _origin_allowed(origin_norm):
-                    response.headers['Access-Control-Allow-Origin'] = origin
-                    response.headers['Vary'] = 'Origin'
-                    response.headers['Access-Control-Allow-Credentials'] = 'false'
-                    requested_headers = request.headers.get('Access-Control-Request-Headers', 'Authorization, Content-Type')
-                    response.headers['Access-Control-Allow-Headers'] = requested_headers
-                    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD'
+                response.headers['Access-Control-Allow-Origin'] = origin
+                response.headers['Vary'] = 'Origin'
+                response.headers['Access-Control-Allow-Credentials'] = 'false'
+                requested_headers = request.headers.get('Access-Control-Request-Headers', 'Authorization, Content-Type')
+                response.headers['Access-Control-Allow-Headers'] = requested_headers
+                response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD'
             return response
     
     # Initialize database
@@ -120,23 +87,11 @@ def create_app():
         """Add CORS and cache control headers to all responses."""
         origin = request.headers.get('Origin')
         
-        # ALWAYS set CORS headers for recognized deployment domains
-        # This ensures even error responses include CORS headers
+        # ALWAYS echo the request Origin when present.
         if origin:
-            origin_lower = origin.lower().strip().rstrip('/')
-            
-            # Allow any Vercel, Render, or localhost deployment origin.
-            if origin_lower.endswith('.vercel.app') or origin_lower.endswith('.onrender.com') \
-               or origin_lower.startswith('http://localhost') or origin_lower.startswith('http://127.0.0.1'):
-                response.headers['Access-Control-Allow-Origin'] = origin
-                response.headers['Vary'] = 'Origin'
-                response.headers['Access-Control-Allow-Credentials'] = 'false'
-            elif CORS_ORIGINS == '*':
-                response.headers['Access-Control-Allow-Origin'] = origin
-                response.headers['Vary'] = 'Origin'
-                response.headers['Access-Control-Allow-Credentials'] = 'false'
-            
-            # Always set these headers when origin is known.
+            response.headers['Access-Control-Allow-Origin'] = origin
+            response.headers['Vary'] = 'Origin'
+            response.headers['Access-Control-Allow-Credentials'] = 'false'
             requested_headers = request.headers.get('Access-Control-Request-Headers')
             response.headers['Access-Control-Allow-Headers'] = requested_headers or 'Authorization, Content-Type, Accept, Origin'
             response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, OPTIONS, PATCH, HEAD'
