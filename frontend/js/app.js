@@ -379,7 +379,27 @@ function showAnalysisPreview(dream) {
     const disturbance = dream.analysis?.sleep?.disturbance;
     const themes = Array.isArray(dream.analysis?.themes) ? dream.analysis.themes : [];
     const topTheme = themes.length > 0 ? themes[0] : null;
+    const interpretedElements = Array.isArray(dream.interpretation?.numbered_elements)
+        ? dream.interpretation.numbered_elements
+        : [];
     const topKeywords = (dream.keywords || []).slice(0, 3);
+
+    const keywordCards = interpretedElements.length
+        ? interpretedElements.slice(0, 5).map((el) => `
+            <div class="analysis-keyword-card">
+                <div class="analysis-keyword-title">
+                    <span class="keyword-tag">${escapeHtml(el.element || '')}</span>
+                    <span class="analysis-keyword-number">#${escapeHtml(String(el.number || ''))}</span>
+                </div>
+                <div class="analysis-keyword-body">
+                    <p><strong>Symbolic Meaning:</strong> ${escapeHtml(el.symbolic_meaning || 'No symbolic meaning available.')}</p>
+                    <p><strong>Subconscious Insight:</strong> ${escapeHtml(el.subconscious_insight || 'No subconscious insight available.')}</p>
+                </div>
+            </div>
+        `).join('')
+        : topKeywords.length
+            ? topKeywords.map(k => `<span class="keyword-tag">${escapeHtml(k)}</span>`).join(' ')
+            : '<span class="hint">No keywords available</span>';
 
     const emotionTipMap = {
         fear: 'Try grounding and calming breathing before sleep.',
@@ -421,12 +441,12 @@ function showAnalysisPreview(dream) {
             </span>
         </div>
         ` : ''}
-        ${topKeywords.length ? `
+        ${interpretedElements.length || topKeywords.length ? `
         <div class="analysis-row">
-            <span class="analysis-label">Keywords:</span>
-            <span class="analysis-value">
-                ${topKeywords.map(k => `<span class="keyword-tag">${k}</span>`).join(' ')}
-            </span>
+            <span class="analysis-label">Keywords & Meanings:</span>
+            <div class="analysis-keyword-grid">
+                ${keywordCards}
+            </div>
         </div>
         ` : ''}
         ${topTheme ? `
