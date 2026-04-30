@@ -3,6 +3,7 @@ Dream Decoder - Dream Routes
 API endpoints for dream CRUD operations
 """
 import os
+import re
 from flask import Blueprint, request, jsonify
 from datetime import datetime
 from backend.models.dream import Dream
@@ -159,6 +160,62 @@ def _generate_local_jungian_report(content, analysis):
     )
 
 
+def _trim_section_text(text, max_chars=650):
+    """Trim section text while preserving sentence boundaries when possible."""
+    if not text:
+        return ''
+    cleaned = ' '.join(str(text).strip().split())
+    if len(cleaned) <= max_chars:
+        return cleaned
+
+    clipped = cleaned[:max_chars].rstrip()
+    # Prefer ending on sentence punctuation rather than hard-cut.
+    sentence_end = max(clipped.rfind('. '), clipped.rfind('! '), clipped.rfind('? '))
+    if sentence_end >= max_chars // 2:
+        return clipped[:sentence_end + 1].strip()
+    return clipped + '...'
+
+
+def _build_essential_jungian_report(raw_text, analysis):
+    """Return a consistent 4-point Jungian report so key sections are never missing."""
+    keywords = (analysis or {}).get('keywords', [])[:5]
+    primary_emotion = (analysis or {}).get('primary_emotion', 'neutral')
+    sentiment = (analysis or {}).get('sentiment', 'neutral')
+
+    symbol_text = ', '.join(keywords) if keywords else 'journey, self, transition'
+
+    defaults = {
+        1: f"The recurring symbols ({symbol_text}) suggest active subconscious processing around identity, control, and adaptation.",
+        2: "Likely active archetypes include the Self, Persona, and Shadow, reflecting tension between social identity and inner emotional truth.",
+        3: f"The dream carries a {sentiment} tone with {primary_emotion} as the dominant emotional signal, indicating unresolved emotional material seeking integration.",
+        4: "Track repeating symbols across multiple dreams, connect them with current life stressors, and use reflective journaling to convert dream insight into action."
+    }
+
+    extracted = {}
+    text = (raw_text or '').replace('\r\n', '\n').strip()
+    if text:
+        for idx in range(1, 5):
+            pattern = rf"{idx}\.\s*[^:]*:\s*(.*?)(?=(?:\n\s*[1-4]\.\s*[^:]*:)|\Z)"
+            match = re.search(pattern, text, re.IGNORECASE | re.DOTALL)
+            if match:
+                extracted[idx] = _trim_section_text(match.group(1))
+
+    sections = {
+        1: extracted.get(1) or defaults[1],
+        2: extracted.get(2) or defaults[2],
+        3: extracted.get(3) or defaults[3],
+        4: extracted.get(4) or defaults[4],
+    }
+
+    return (
+        "Title: Jungian Interpretation\n\n"
+        f"1. Symbols Meaning: {sections[1]}\n\n"
+        f"2. Archetypes Identified: {sections[2]}\n\n"
+        f"3. Emotional Insight: {sections[3]}\n\n"
+        f"4. Personal Growth Message: {sections[4]}"
+    )
+
+
 def _compact_report_for_list(dream_dict, max_report_chars=1800):
     """Reduce payload size for list APIs while preserving preview-ready report content."""
     report = dream_dict.get('jungian_report') or {}
@@ -232,24 +289,30 @@ def create_dream():
         try:
             jungian_result = analyze_jungian(content)
             if 'error' in jungian_result:
+                local_report = _generate_local_jungian_report(content, analysis)
                 jungian_report = {
-                    'analysis': _generate_local_jungian_report(content, analysis),
+                    'analysis': _build_essential_jungian_report(local_report, analysis),
+                    'raw_analysis': local_report,
                     'provider': 'Unavailable',
                     'status': 'error',
                     'generated_at': datetime.utcnow().isoformat(),
                     'fallback_reason': jungian_result['error']
                 }
             else:
+                raw_analysis = jungian_result.get('analysis', '')
                 jungian_report = {
-                    'analysis': jungian_result.get('analysis', ''),
+                    'analysis': _build_essential_jungian_report(raw_analysis, analysis),
+                    'raw_analysis': raw_analysis,
                     'provider': jungian_result.get('provider', 'Google Gemini'),
                     'status': 'ready',
                     'generated_at': datetime.utcnow().isoformat()
                 }
         except Exception as jungian_err:
             print(f"WARNING: Jungian analysis skipped due to error: {jungian_err}")
+            local_report = _generate_local_jungian_report(content, analysis)
             jungian_report = {
-                'analysis': _generate_local_jungian_report(content, analysis),
+                'analysis': _build_essential_jungian_report(local_report, analysis),
+                'raw_analysis': local_report,
                 'provider': 'Unavailable',
                 'status': 'error',
                 'generated_at': datetime.utcnow().isoformat(),
@@ -408,7 +471,7 @@ def get_jungian_reports():
                     'created_at': d.get('created_at'),
                     'jungian_report': report
                 }
-                items.append(_compact_report_for_list(compact, max_report_chars=2500))
+                items.append(compact)
 
         return jsonify({
             'dreams': items,
