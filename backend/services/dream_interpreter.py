@@ -4,7 +4,7 @@ Provides deep psychological and symbolic analysis of dream content in multiple l
 """
 import re
 from backend.services.language_detector import detect_with_fallback
-from backend.services.dream_symbols import find_symbols_in_text
+from backend.services.dream_symbols import find_symbols_in_text, resolve_keyword_symbol
 from backend.services.translations import get_interpretation_template
 
 
@@ -162,31 +162,56 @@ def interpret_dream(text, nlp_analysis, user_language='en'):
     # Extract elements from NLP analysis
     keywords = nlp_analysis.get('keywords', [])
     
-    # Build numbered elements
+    # Build numbered elements from the extracted dream keywords.
+    # If a keyword matches the dream symbol database, use that symbol's meaning and interpretation.
     numbered_elements = []
-    for i, symbol_data in enumerate(found_symbols[:5], 1):
-        numbered_elements.append({
-            'number': i,
-            'element': symbol_data['keyword'].capitalize(),
-            'symbolic_meaning': symbol_data['meaning'],
-            'subconscious_insight': symbol_data['interpretation'],
-            'weight': symbol_data.get('weight', 1),
-            'emotion': symbol_data.get('emotion', 'neutral')
-        })
-    
-    # Generic element fallback (Only if NO verified symbols are found)
-    if not numbered_elements and keywords:
-        for i, keyword in enumerate(keywords[:3], 1):
-            # Only include keywords that actually exist in the text
-            if keyword.lower() in original_text_lower:
-                numbered_elements.append({
-                    'number': i,
-                    'element': keyword.capitalize(),
-                    'symbolic_meaning': _get_generic_meaning(interpretation_lang),
-                    'subconscious_insight': _get_generic_insight(interpretation_lang),
-                    'weight': 1,
-                    'emotion': 'neutral'
-                })
+    seen_elements = set()
+    for keyword in keywords:
+        if len(numbered_elements) >= 5:
+            break
+
+        normalized_keyword = keyword.lower().strip()
+        if not normalized_keyword or normalized_keyword in seen_elements:
+            continue
+
+        if normalized_keyword not in original_text_lower:
+            continue
+
+        seen_elements.add(normalized_keyword)
+        symbol_match = resolve_keyword_symbol(keyword, interpretation_lang)
+
+        if symbol_match:
+            numbered_elements.append({
+                'number': len(numbered_elements) + 1,
+                'element': keyword.capitalize(),
+                'symbolic_meaning': symbol_match['meaning'],
+                'subconscious_insight': symbol_match['interpretation'],
+                'weight': symbol_match.get('weight', 1),
+                'emotion': symbol_match.get('emotion', 'neutral'),
+                'symbol_key': symbol_match.get('symbol')
+            })
+        else:
+            numbered_elements.append({
+                'number': len(numbered_elements) + 1,
+                'element': keyword.capitalize(),
+                'symbolic_meaning': _get_generic_meaning(interpretation_lang),
+                'subconscious_insight': _get_generic_insight(interpretation_lang),
+                'weight': 1,
+                'emotion': 'neutral'
+            })
+
+    # If keywords were empty or no usable matches were found, fall back to verified symbols.
+    if not numbered_elements:
+        for symbol_data in found_symbols[:5]:
+            numbered_elements.append({
+                'number': len(numbered_elements) + 1,
+                'element': symbol_data['keyword'].capitalize(),
+                'symbolic_meaning': symbol_data['meaning'],
+                'subconscious_insight': symbol_data['interpretation'],
+                'weight': symbol_data.get('weight', 1),
+                'emotion': symbol_data.get('emotion', 'neutral'),
+                'symbol_key': symbol_data.get('symbol')
+            })
     
     overall_interpretation = _generate_overall_interpretation(
         numbered_elements, final_emotion, final_sentiment, keywords, interpretation_lang

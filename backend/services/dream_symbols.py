@@ -793,6 +793,57 @@ def get_symbol_emotion(symbol_key):
     return symbol.get('emotion', 'neutral')
 
 
+def resolve_keyword_symbol(keyword, lang_code='en'):
+    """Resolve a dream keyword to the closest matching symbolic meaning, if available."""
+    if not keyword:
+        return None
+
+    keyword_lower = keyword.lower().strip()
+    if not keyword_lower:
+        return None
+
+    langs_to_check = [lang_code]
+    if lang_code == 'en' and 'hinglish' not in langs_to_check:
+        langs_to_check.append('hinglish')
+
+    best_match = None
+
+    for symbol_key, symbol_data in DREAM_SYMBOLS.items():
+        for current_lang in langs_to_check:
+            lang_data = symbol_data.get(current_lang, {})
+            if not lang_data and current_lang == lang_code:
+                lang_data = symbol_data.get('en', {})
+
+            for candidate in lang_data.get('keywords', []):
+                candidate_lower = candidate.lower().strip()
+                if not candidate_lower:
+                    continue
+
+                exact_match = keyword_lower == candidate_lower
+                partial_match = keyword_lower in candidate_lower or candidate_lower in keyword_lower
+
+                if exact_match or partial_match:
+                    match_score = 2 if exact_match else 1
+                    if not best_match or match_score > best_match['match_score'] or (
+                        match_score == best_match['match_score'] and len(candidate_lower) > len(best_match['matched_keyword'])
+                    ):
+                        best_match = {
+                            'symbol': symbol_key,
+                            'matched_keyword': candidate,
+                            'meaning': lang_data.get('meaning', ''),
+                            'interpretation': lang_data.get('interpretation', ''),
+                            'category': symbol_data.get('category', 'other'),
+                            'emotion': symbol_data.get('emotion', 'neutral'),
+                            'weight': symbol_data.get('weight', 1),
+                            'polarity': symbol_data.get('polarity', 0),
+                            'match_score': match_score,
+                        }
+
+    if best_match:
+        best_match.pop('match_score', None)
+    return best_match
+
+
 def find_symbols_in_text(text, lang_code='en'):
     """Find dream symbols in text for a specific language."""
     if not text:
