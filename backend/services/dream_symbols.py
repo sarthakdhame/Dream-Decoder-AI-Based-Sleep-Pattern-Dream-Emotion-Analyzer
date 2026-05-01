@@ -743,6 +743,145 @@ DREAM_SYMBOLS = {
         'hi': {'keywords': ['गाड़ी', 'कार', 'वाहन'], 'meaning': 'जीवन की दिशा', 'interpretation': 'गाड़ी अक्सर जीवन में आपकी गति का प्रतिनिधित्व करती है।'},
         'mr': {'keywords': ['गाडी', 'कार', 'वाहन'], 'meaning': 'जीवन प्रवास', 'interpretation': 'गाडी तुमच्या जीवनातील प्रवासाचे प्रतीक आहे।'},
         'hinglish': {'keywords': ['gadi', 'car', 'gaadi', 'vehicle'], 'meaning': 'life direction', 'interpretation': 'Car life direction aur movement symbolize karti hai.'}
+    },
+
+    # ========================================
+    # EMOTIONAL & PSYCHOLOGICAL STATES
+    # ========================================
+
+    'felt': {
+        'category': 'emotion_state',
+        'emotion': 'neutral',
+        'weight': 2,
+        'polarity': 0,
+        'en': {
+            'keywords': ['felt', 'feeling', 'sensation', 'experienced'],
+            'meaning': 'emotional awareness, past experience, lingering emotions, embodied experience',
+            'interpretation': 'The word "felt" in your dream emphasizes the importance of emotions and somatic sensations. It highlights emotional awareness and the body\'s role in processing experiences. This suggests your subconscious is drawing attention to how you physically experience emotions—tension, comfort, unease. It signifies that the dream is about processing emotions on a deeper, more visceral level rather than just intellectual understanding.'
+        },
+        'hi': {
+            'keywords': ['महसूस', 'अनुभव', 'संवेदना', 'भावना'],
+            'meaning': 'भावनात्मक जागरूकता, पिछला अनुभव, स्थायी भावनाएं, शारीरिक अनुभव',
+            'interpretation': 'आपके सपने में "महसूस" शब्द भावनाओं और शारीरिक संवेदनाओं के महत्व को जोर देता है। यह भावनात्मक जागरूकता और अनुभवों को संसाधित करने में शरीर की भूमिका को उजागर करता है। यह सुझाता है कि आपका अवचेतन इस बात पर ध्यान दे रहा है कि आप भावनाओं को शारीरिक रूप से कैसे अनुभव करते हैं—तनाव, आराम, बेचैनी। यह दर्शाता है कि सपना भावनाओं को एक गहरे, अधिक शारीरिक स्तर पर संसाधित करने के बारे में है।'
+        },
+        'mr': {
+            'keywords': ['जाणवलं', 'अनुभव', 'संवेदना', 'भावना'],
+            'meaning': 'भावनिक जागरूकता, पिछला अनुभव, टिकून राहणारी भावना, शारीरिक अनुभव',
+            'interpretation': 'तुमच्या स्वप्नात "जाणवलं" हा शब्द भावना आणि शारीरिक संवेदनांचे महत्व अधोरेखित करतो. ते भावनिक जागरूकता आणि अनुभवांवर प्रक्रिया करण्यातील शरीराची भूमिका उजागर करते. हे सुचवते की तुमचे अवचेतन हे लक्ष करत आहे कि तुम्ही भावना कसे शारीरिकरित्या अनुभवता—ताण, आराम, अस्वस्थता. हे दर्शवते की स्वप्न भावनांवर गहन स्तरावर प्रक्रिया करण्याबद्दल आहे.'
+        },
+        'hinglish': {
+            'keywords': ['felt', 'mehsoos', 'anubhav', 'sensation', 'feeling'],
+            'meaning': 'emotional awareness, somatic experience, embodied feelings',
+            'interpretation': 'Felt word aapke sapne mein emotions aur physical sensations ke importance ko emphasize karta hai. Ye emotional awareness aur body ki role ko highlight karta hai. Ye suggest karta hai ki aapka subconscious tumhe attention de raha hai ki tum emotions ko physically kaisa experience karte ho—tension, comfort, unease. Ye darshata hai ki sapna emotions ko deeper, visceral level par process karne ke baare mein hai.'
+        }
+    },
+
+    'spreading': {
+        'category': 'movement_expansion',
+        'emotion': 'fear',
+        'weight': 2,
+        'polarity': -1,
+        'en': {
+            'keywords': ['spreading', 'spread', 'expanding', 'growth', 'proliferating', 'extending'],
+            'meaning': 'loss of control, escalating problems, uncontainable forces, anxiety about situations spiraling',
+            'interpretation': 'Spreading symbolizes things going beyond your control. It represents situations, emotions, or problems that are expanding in ways you cannot contain. The fear of spreading suggests anxiety about situations escalating or becoming bigger than manageable. This often reflects real-life concerns about problems multiplying or situations spiraling out of control. Your subconscious is processing the fear of losing command over circumstances and the psychological impact of witnessing situations worsen.'
+        },
+        'hi': {
+            'keywords': ['फैलना', 'प्रसारित', 'विस्तार', 'वृद्धि', 'फैलाव'],
+            'meaning': 'नियंत्रण खोना, समस्याएं बढ़ना, अनियंत्रणीय शक्तियां, परिस्थितियां बिगड़ने की चिंता',
+            'interpretation': 'फैलना आपके नियंत्रण के बाहर चीजों का प्रतीक है। यह ऐसी परिस्थितियों, भावनाओं या समस्याओं का प्रतिनिधित्व करता है जो उन तरीकों से विस्तारित हो रही हैं जिन्हें आप नियंत्रित नहीं कर सकते। फैलने का भय परिस्थितियों के बढ़ने या प्रबंधनीय से अधिक बड़ी होने की चिंता को दर्शाता है। यह अक्सर समस्याओं के गुणा होने या परिस्थितियों के नियंत्रण से बाहर होने के वास्तविक जीवन की चिंताओं को दर्शाता है।'
+        },
+        'mr': {
+            'keywords': ['पसरणे', 'पसरवणे', 'विस्तार', 'वाढ', 'पसरलेले'],
+            'meaning': 'नियंत्रण गमावणे, समस्या वाढणे, अनियंत्रणीय शक्ती, परिस्थिती बिघडण्याची चिंता',
+            'interpretation': 'पसरणे तुमच्या नियंत्रणाबाहेरची गोष्टी दर्शवते. हे परिस्थिती, भावना किंवा समस्या दर्शवते जे तुम्ही नियंत्रित करू शकत नाही अशा प्रकारे विस्तारित होत आहेत. पसरण्याची भीती परिस्थिती वाढण्या किंवा प्रबंधनीय होण्यापेक्षा मोठी होण्याची चिंता दर्शवते.'
+        },
+        'hinglish': {
+            'keywords': ['spread', 'phalna', 'expanding', 'failna', 'failiav'],
+            'meaning': 'loss of control, escalating problems, spiraling situations',
+            'interpretation': 'Spreading apke control se bahar cheezon ko symbolize karta hai. Situations, emotions ya problems jo expand ho rahe hain uncontainable ways mein. Spreading ka dar anxiety suggest karta hai situations escalate hone ki ya manageable se bada hone ki. Ye real-life concerns ko reflect karta hai problems multiply hone ya situations spiral out of control hone ke baare mein.'
+        }
+    },
+
+    'powerless': {
+        'category': 'emotion_state',
+        'emotion': 'fear',
+        'weight': 3,
+        'polarity': -1,
+        'en': {
+            'keywords': ['powerless', 'helpless', 'weak', 'vulnerable', 'unable', 'incapable'],
+            'meaning': 'loss of agency, vulnerability, fear of inadequacy, suppressed potential, struggle with limitations',
+            'interpretation': 'Powerlessness in your dream reflects a deep psychological state where you feel stripped of agency and control. This is one of the most significant emotional indicators, pointing to feelings of helplessness in real life. It suggests you are facing situations where you feel inadequate, unable to influence outcomes, or trapped by circumstances beyond your control. Your subconscious is highlighting the psychological weight of this vulnerability and possibly calling you to recognize and reclaim your inner power. The dream emphasizes the need to examine what areas of your life feel unmanageable and where you might be surrendering control unnecessarily.'
+        },
+        'hi': {
+            'keywords': ['शक्तिहीन', 'असहाय', 'कमजोर', 'असुरक्षित', 'असमर्थ'],
+            'meaning': 'एजेंसी का नुकसान, कमजोरी, अपर्याप्तता का डर, दबी हुई क्षमता',
+            'interpretation': 'आपके सपने में शक्तिहीनता एक गहरी मनोवैज्ञानिक स्थिति को दर्शाती है जहां आप एजेंसी और नियंत्रण से वंचित महसूस करते हैं। यह सबसे महत्वपूर्ण भावनात्मक संकेतकों में से एक है, जो वास्तविक जीवन में असहायता की भावनाओं की ओर इशारा करता है। यह सुझाता है कि आप ऐसी परिस्थितियों का सामना कर रहे हैं जहां आप अपर्याप्त, परिणामों को प्रभावित करने में असमर्थ, या आपके नियंत्रण से परे परिस्थितियों में फंसे हुए महसूस करते हैं।'
+        },
+        'mr': {
+            'keywords': ['शक्तिहीन', 'असहाय', 'कमजोर', 'असुरक्षित', 'असक्षम'],
+            'meaning': 'एजेंसीचा नुकसान, कमजोरी, अपर्याप्ततेची भीती, दबी हुई क्षमता',
+            'interpretation': 'तुमच्या स्वप्नातील शक्तिहीनता एक गहरी मनोवैज्ञानिक स्थिती दर्शवते जेथे तुम्ही एजेंसी आणि नियंत्रणापासून वंचित वाटता. हे सर्वात महत्त्वपूर्ण भावनिक सूचक आहे, वास्तविक जीवनात असहायतेची भावना दर्शवते. हे सुचवते की तुम्ही अशा परिस्थितीला सामोरे जात आहात जेथे तुम्ही अपर्याप्त, परिणाम प्रभावित करण्यास असमर्थ किंवा तुमच्या नियंत्रणाबाहेरच्या परिस्थितीत अडकलेले वाटता.'
+        },
+        'hinglish': {
+            'keywords': ['powerless', 'shapthihin', 'asahay', 'kamzor', 'vulnerable'],
+            'meaning': 'loss of agency, helplessness, vulnerability, struggle',
+            'interpretation': 'Powerless apke sapne mein ek deep psychological state ko reflect karta hai jahan tum agency aur control se vanchit mahsoos karte ho. Ye most significant emotional indicator hai, pointing to feelings of helplessness real life mein. Ye suggest karta hai tum situations face kar rahe ho jahan tum inadequate, unable to influence outcomes, ya circumstances beyond your control mein trapped feel karte ho.'
+        }
+    },
+
+    'rapidly': {
+        'category': 'modifier',
+        'emotion': 'fear',
+        'weight': 2,
+        'polarity': -1,
+        'en': {
+            'keywords': ['rapidly', 'quickly', 'fast', 'sudden', 'abrupt', 'swift'],
+            'meaning': 'urgency, loss of control, accelerating events, panic about pace',
+            'interpretation': 'Rapidly in your dream modifies the intensity and pace of events, suggesting things are happening faster than you can process or respond to. This creates a sense of urgency and panic. It indicates your subconscious is processing anxiety about situations moving too quickly to manage. The rapid pace may reflect real-life circumstances where you feel overwhelmed by events unfolding too quickly—deadline pressures, rapid emotional escalations, or sudden life changes. This word emphasizes the temporal aspect of your anxiety and the feeling of being outpaced by events.'
+        },
+        'hi': {
+            'keywords': ['तेजी से', 'तेज', 'जल्दी', 'अचानक', 'अनपेक्षित'],
+            'meaning': 'तात्कालिकता, नियंत्रण खोना, त्वरित घटनाएं, गति की चिंता',
+            'interpretation': 'आपके सपने में तेजी से घटनाओं की तीव्रता और गति को संशोधित करता है, यह सुझाव देता है कि चीजें उस गति से हो रही हैं जो आप प्रक्रिया या प्रतिक्रिया कर सकते हैं। यह तात्कालिकता और घबराहट की भावना बनाता है। यह इंगित करता है कि आपका अवचेतन परिस्थितियों के बारे में चिंता प्रक्रिया कर रहा है जो बहुत तेजी से आगे बढ़ रही हैं।'
+        },
+        'mr': {
+            'keywords': ['वेगाने', 'वेगवान', 'द्रुत', 'अचानक', 'तटकट'],
+            'meaning': 'तातकाळीकता, नियंत्रण गमावणे, वेगवान घटना, गतीची चिंता',
+            'interpretation': 'तुमच्या स्वप्नात वेगाने घटनांची तीव्रता आणि गती बदलते, हे सुचवते की गोष्टी तुम्ही प्रक्रिया किंवा प्रतिक्रिया दे शकता त्यापेक्षा वेगाने घडत आहेत. हे तातकाळीकता आणि घबराहटची भावना तयार करते.'
+        },
+        'hinglish': {
+            'keywords': ['rapidly', 'tezi se', 'jaldi', 'vegane', 'jhatpat'],
+            'meaning': 'urgency, loss of control, panic, accelerating events',
+            'interpretation': 'Rapidly aapke sapne mein events ki intensity aur pace ko modify karta hai, suggesting things faster ho rahe hain than you can process. Ye urgency aur panic ki feeling deti hai. Ye indicate karta hai aapka subconscious anxiety process kar raha hai situations ke baare mein jo quickly move kar rahe hain manage karne ke liye.'
+        }
+    },
+
+    'intense': {
+        'category': 'emotion_modifier',
+        'emotion': 'fear',
+        'weight': 3,
+        'polarity': -1,
+        'en': {
+            'keywords': ['intense', 'overwhelming', 'severe', 'extreme', 'heightened', 'strong'],
+            'meaning': 'amplified emotions, peak psychological states, magnified impact, emotional extremity',
+            'interpretation': 'Intense emphasizes the emotional magnitude and psychological weight of your dream experience. It signifies that the emotions you\'re processing are heightened and powerful. This word suggests your subconscious is amplifying specific feelings because they demand your attention and processing. The intensity indicates these are not mild concerns but significant psychological states requiring emotional work. Your dream is presenting emotions at their peak level, possibly to help you recognize their importance or to work through deeply rooted feelings. The intensity also suggests a breaking point—emotions that can no longer be suppressed or ignored.'
+        },
+        'hi': {
+            'keywords': ['तीव्र', 'भारी', 'गंभीर', 'चरम', 'शक्तिशाली'],
+            'meaning': 'बढ़ी हुई भावनाएं, शिखर मनोवैज्ञानिक अवस्था, बढ़ा हुआ प्रभाव, भावनात्मक चरमता',
+            'interpretation': 'तीव्र आपके सपने के अनुभव की भावनात्मक परिमाण और मनोवैज्ञानिक वजन पर जोर देता है। यह दर्शाता है कि आप जो भावनाओं को संसाधित कर रहे हैं वे बढ़ी हुई और शक्तिशाली हैं। यह शब्द सुझाता है कि आपका अवचेतन विशिष्ट भावनाओं को बढ़ा रहा है क्योंकि उन्हें आपके ध्यान और प्रक्रिया की आवश्यकता है। तीव्रता इंगित करती है कि ये हल्की चिंताएं नहीं हैं बल्कि महत्वपूर्ण मनोवैज्ञानिक अवस्थाएं हैं।'
+        },
+        'mr': {
+            'keywords': ['तीव्र', 'भारी', 'गंभीर', 'अत्यंत', 'शक्तिशाली', 'प्रखर'],
+            'meaning': 'वाढलेली भावना, शिखर मनोवैज्ञानिक अवस्था, वाढलेला प्रभाव, भावनात्मक अत्यंतता',
+            'interpretation': 'तीव्र तुमच्या स्वप्नाच्या अनुभवाचे भावनिक परिमाण आणि मनोवैज्ञानिक वजन अधोरेखित करते. हे दर्शवते की तुम्ही जी भावना प्रक्रिया करत आहात ती वाढलेली आणि शक्तिशाली आहे. हा शब्द सुचवते की तुमचे अवचेतन विशिष्ट भावना वाढवत आहे कारण त्यांना तुमचे लक्ष आणि प्रक्रिया हवी आहे.'
+        },
+        'hinglish': {
+            'keywords': ['intense', 'teevr', 'bhari', 'extreme', 'heightened', 'strong'],
+            'meaning': 'amplified emotions, peak psychological states, emotional extremity',
+            'interpretation': 'Intense aapke sapne ke experience ki emotional magnitude aur psychological weight ko emphasize karta hai. Ye darshata hai ki emotions jo tum process kar rahe ho heightened aur powerful hain. Ye word suggest karta hai aapka subconscious specific emotions ko amplify kar raha hai kyunki unhe aapka attention aur processing chahiye. Intensity indicate karti hai ye mild concerns nahi hain lekin significant psychological states hain.'
+        }
     }
 }
 
@@ -760,18 +899,22 @@ SYMBOL_CATEGORIES = {
     'place': ['house'],
     'element': ['fire'],
     'emotion_literal': ['joy_literal', 'fear_literal'],
+    'emotion_state': ['felt', 'powerless'],
+    'emotion_modifier': ['intense'],
+    'movement_expansion': ['spreading'],
+    'modifier': ['rapidly'],
     'object': ['car']
 }
 
 
 # Emotion-based symbol grouping
 EMOTION_SYMBOLS = {
-    'fear': ['falling', 'flood', 'spider', 'snake', 'darkness', 'chase', 'exam', 'teeth_falling', 'late', 'fear_literal'],
+    'fear': ['falling', 'flood', 'spider', 'snake', 'darkness', 'chase', 'exam', 'teeth_falling', 'late', 'fear_literal', 'spreading', 'powerless', 'rapidly', 'intense'],
     'joy': ['flying', 'bird', 'joy_literal'],
     'love': ['dog'],
     'sadness': ['rain', 'death'],
     'anger': ['fire'],
-    'neutral': ['ocean', 'river', 'cat', 'house', 'car']
+    'neutral': ['ocean', 'river', 'cat', 'house', 'car', 'felt']
 }
 
 
