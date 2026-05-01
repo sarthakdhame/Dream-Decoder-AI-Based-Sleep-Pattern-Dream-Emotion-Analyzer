@@ -8,6 +8,7 @@ from flask import Blueprint, request, jsonify
 from datetime import datetime
 from backend.models.dream import Dream
 from backend.models.sleep import SleepRecord
+from backend.services.dream_symbols import resolve_keyword_symbol
 from backend.services.nlp_engine import analyze_dream
 from backend.services.jungian_analyzer import analyze_jungian
 from backend.services.sleep_analyzer import SleepAnalyzer
@@ -179,10 +180,33 @@ def _trim_section_text(text, max_chars=650):
 def _build_essential_jungian_report(raw_text, analysis):
     """Return a consistent 4-point Jungian report so key sections are never missing."""
     keywords = (analysis or {}).get('keywords', [])[:5]
+    interpretation = (analysis or {}).get('interpretation') or {}
+    interpreted_elements = interpretation.get('numbered_elements') if isinstance(interpretation, dict) else []
     primary_emotion = (analysis or {}).get('primary_emotion', 'neutral')
     sentiment = (analysis or {}).get('sentiment', 'neutral')
 
     symbol_text = ', '.join(keywords) if keywords else 'journey, self, transition'
+
+    keyword_lines = []
+    if isinstance(interpreted_elements, list) and interpreted_elements:
+        for element in interpreted_elements[:5]:
+            element_name = element.get('element') or element.get('keyword') or 'Unknown'
+            symbolic_meaning = element.get('symbolic_meaning') or 'No symbolic meaning available.'
+            subconscious_insight = element.get('subconscious_insight') or 'No subconscious insight available.'
+            keyword_lines.append(
+                f"- {element_name}: Symbolic Meaning: {symbolic_meaning} | Subconscious Insight: {subconscious_insight}"
+            )
+    else:
+        for keyword in keywords[:5]:
+            symbol_match = resolve_keyword_symbol(keyword)
+            if symbol_match:
+                keyword_lines.append(
+                    f"- {keyword.capitalize()}: Symbolic Meaning: {symbol_match.get('meaning', 'No symbolic meaning available.')} | Subconscious Insight: {symbol_match.get('interpretation', 'No subconscious insight available.')}"
+                )
+            else:
+                keyword_lines.append(
+                    f"- {keyword.capitalize()}: Symbolic Meaning: This element represents a focal point of subconscious attention. | Subconscious Insight: The appearance of this detail suggests that your mind is organizing impressions into a meaningful psychological pattern."
+                )
 
     defaults = {
         1: f"The recurring symbols ({symbol_text}) suggest active subconscious processing around identity, control, and adaptation.",
@@ -207,12 +231,15 @@ def _build_essential_jungian_report(raw_text, analysis):
         4: extracted.get(4) or defaults[4],
     }
 
+    keyword_section = '\n'.join(keyword_lines) if keyword_lines else '- No keyword-level symbolic matches were identified.'
+
     return (
         "Title: Jungian Interpretation\n\n"
         f"1. Symbols Meaning: {sections[1]}\n\n"
         f"2. Archetypes Identified: {sections[2]}\n\n"
         f"3. Emotional Insight: {sections[3]}\n\n"
-        f"4. Personal Growth Message: {sections[4]}"
+        f"4. Personal Growth Message: {sections[4]}\n\n"
+        f"5. Keyword Symbolic Meanings and Subconscious Insights:\n{keyword_section}"
     )
 
 
