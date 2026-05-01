@@ -136,6 +136,19 @@ def _fallback_analysis(content, user_language):
                 'weight': 1,
                 'emotion': 'neutral'
             })
+
+    overall_interpretation = _build_overall_interpretation(
+        content,
+        content,
+        {
+            'keywords': final_keywords,
+            'primary_emotion': primary_emotion,
+            'sentiment': sentiment,
+            'interpretation': {
+                'numbered_elements': numbered_elements,
+            },
+        },
+    )
     
     return {
         'sentiment': sentiment,
@@ -149,6 +162,7 @@ def _fallback_analysis(content, user_language):
         'summary': f'This dream has a {sentiment} tone with themes of {", ".join(final_keywords[:3])}. Key symbols suggest ongoing emotional processing during sleep.',
         'interpretation': {
             'overall_message': 'Analysis based on text pattern recognition. Full ML analysis unavailable.',
+            'overall_interpretation': overall_interpretation,
             'emotional_pattern': f"Primary emotion appears to be {primary_emotion} with a {sentiment} polarity ({sentiment_score:.2f}).",
             'symbolic_focus': f"Most recurrent symbols: {', '.join(final_keywords[:4])}.",
             'guidance': 'Consider journaling what happened before sleep and any real-life events connected to these symbols.',
@@ -216,8 +230,67 @@ def _trim_section_text(text, max_chars=650):
     return clipped + '...'
 
 
+def _build_overall_interpretation(raw_text, content, analysis, sections=None):
+    """Build a dream-specific overall interpretation paragraph for the report."""
+    sections = sections or {}
+    interpretation = (analysis or {}).get('interpretation') or {}
+
+    overall = (
+        interpretation.get('overall_interpretation')
+        or (analysis or {}).get('overall_interpretation')
+        or sections.get(6)
+    )
+    if overall:
+        return _trim_section_text(overall, 900)
+
+    keywords = (analysis or {}).get('keywords', [])[:5]
+    primary_emotion = (analysis or {}).get('primary_emotion', 'neutral')
+    sentiment = (analysis or {}).get('sentiment', 'neutral')
+    elements = interpretation.get('numbered_elements') if isinstance(interpretation, dict) else []
+
+    focus_parts = []
+    if keywords:
+        focus_parts.append(', '.join(keywords[:3]))
+    elif content:
+        focus_parts.append('the dream imagery')
+    else:
+        focus_parts.append('the dream symbols')
+
+    if elements:
+        element_focus = ', '.join(
+            (element.get('element') or 'Unknown').lower()
+            for element in elements[:2]
+        )
+        if element_focus:
+            focus_parts.append(element_focus)
+
+    tone_sentence = (
+        f"The dream carries a {sentiment} emotional tone, with {primary_emotion} shaping how the symbols are being processed."
+    )
+    if content:
+        tone_sentence += ""
+
+    if sentiment == 'negative' or primary_emotion in {'fear', 'sadness', 'anger'}:
+        closing_sentence = (
+            "Your subconscious appears to be helping you process tension, fear, or pressure in a controlled way so you can face these feelings more safely while awake."
+        )
+    elif sentiment == 'positive' or primary_emotion in {'joy', 'love', 'trust'}:
+        closing_sentence = (
+            "Your subconscious is reinforcing growth, confidence, and emotional integration, pointing toward a steadier inner balance."
+        )
+    else:
+        closing_sentence = (
+            "Your subconscious is organizing these impressions into a meaningful pattern, asking you to notice what is changing in your inner life."
+        )
+
+    return _trim_section_text(
+        f"Your dream weaves together symbols of {', '.join(focus_parts)} in a way that reflects your current emotional state. {tone_sentence} {closing_sentence}",
+        900
+    )
+
+
 def _build_essential_jungian_report(raw_text, analysis):
-    """Return a consistent 4-point Jungian report so key sections are never missing."""
+    """Return a consistent Jungian report so key sections are never missing."""
     keywords = (analysis or {}).get('keywords', [])[:5]
     interpretation = (analysis or {}).get('interpretation') or {}
     interpreted_elements = interpretation.get('numbered_elements') if isinstance(interpretation, dict) else []
@@ -271,6 +344,7 @@ def _build_essential_jungian_report(raw_text, analysis):
     }
 
     keyword_section = '\n'.join(keyword_lines) if keyword_lines else '- No keyword-level symbolic matches were identified.'
+    overall_interpretation = _build_overall_interpretation(raw_text, raw_text, analysis, sections)
 
     return (
         "Title: Jungian Interpretation\n\n"
@@ -278,7 +352,8 @@ def _build_essential_jungian_report(raw_text, analysis):
         f"2. Archetypes Identified: {sections[2]}\n\n"
         f"3. Emotional Insight: {sections[3]}\n\n"
         f"4. Personal Growth Message: {sections[4]}\n\n"
-        f"5. Keyword Symbolic Meanings and Subconscious Insights:\n{keyword_section}"
+        f"5. Keyword Symbolic Meanings and Subconscious Insights:\n{keyword_section}\n\n"
+        f"6. Overall Interpretation: {overall_interpretation}"
     )
 
 

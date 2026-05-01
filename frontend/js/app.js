@@ -1929,26 +1929,17 @@ function renderJungianOutput(text, container) {
         "Archetypes Identified",
         "Emotional Insight",
         "Personal Growth Message",
-        "Keyword Symbolic Meanings and Subconscious Insights"
+        "Keyword Symbolic Meanings and Subconscious Insights",
+        "Overall Interpretation"
     ];
 
     let html = '';
 
-    // Check if we have the expected number of sections (plus content before first section)
-    if (sections.length >= 6) {
-        for (let i = 0; i < 5; i++) {
-            const sectionContent = sections[i + 1] || "";
-            const sectionName = sectionNames[i];
+    const sectionCount = Math.min(sectionNames.length, Math.max(0, sections.length - 1));
 
-            html += `
-                <div class="jungian-section" style="margin-bottom: 20px;">
-                    <h4 style="color: var(--color-foam); margin-bottom: 8px; border-bottom: 1px solid var(--color-bg-tertiary); padding-bottom: 4px;">${sectionName}</h4>
-                    <p style="color: var(--color-text-secondary); line-height: 1.6;">${escapeHtml(sectionContent.trim())}</p>
-                </div>
-            `;
-        }
-    } else if (sections.length >= 5) {
-        for (let i = 0; i < 4; i++) {
+    // Check if we have the expected number of sections (plus content before first section)
+    if (sectionCount >= 1) {
+        for (let i = 0; i < sectionCount; i++) {
             const sectionContent = sections[i + 1] || "";
             const sectionName = sectionNames[i];
 
