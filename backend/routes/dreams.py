@@ -99,6 +99,30 @@ def _fallback_analysis(content, user_language):
     else:
         emotion_scores = {'neutral': 0.62, 'anticipation': 0.24, 'trust': 0.22}
     
+    # Generate numbered elements with symbolic meanings for fallback analysis
+    numbered_elements = []
+    for idx, keyword in enumerate(final_keywords[:5], 1):
+        symbol_match = resolve_keyword_symbol(keyword, user_language)
+        if symbol_match:
+            numbered_elements.append({
+                'number': idx,
+                'element': keyword.capitalize(),
+                'symbolic_meaning': symbol_match.get('meaning', 'No symbolic meaning available.'),
+                'subconscious_insight': symbol_match.get('interpretation', 'No subconscious insight available.'),
+                'weight': symbol_match.get('weight', 1),
+                'emotion': symbol_match.get('emotion', 'neutral'),
+                'symbol_key': symbol_match.get('symbol')
+            })
+        else:
+            numbered_elements.append({
+                'number': idx,
+                'element': keyword.capitalize(),
+                'symbolic_meaning': 'This element represents a focal point of subconscious attention.',
+                'subconscious_insight': 'The appearance of this detail suggests that your mind is organizing impressions into a meaningful psychological pattern.',
+                'weight': 1,
+                'emotion': 'neutral'
+            })
+    
     return {
         'sentiment': sentiment,
         'sentiment_score': sentiment_score,
@@ -113,7 +137,8 @@ def _fallback_analysis(content, user_language):
             'overall_message': 'Analysis based on text pattern recognition. Full ML analysis unavailable.',
             'emotional_pattern': f"Primary emotion appears to be {primary_emotion} with a {sentiment} polarity ({sentiment_score:.2f}).",
             'symbolic_focus': f"Most recurrent symbols: {', '.join(final_keywords[:4])}.",
-            'guidance': 'Consider journaling what happened before sleep and any real-life events connected to these symbols.'
+            'guidance': 'Consider journaling what happened before sleep and any real-life events connected to these symbols.',
+            'numbered_elements': numbered_elements
         },
         'emotion_confidence': 0.6,
         'detected_language': user_language,
