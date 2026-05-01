@@ -514,6 +514,138 @@ DREAM_SYMBOLS = {
             'interpretation': 'Sapne mein ghar aapke ya aapki psyche ko represent karta hai. Different rooms aapki personality ya life ke different aspects ko symbolize kar sakte hain.'
         }
     },
+
+    'bed': {
+        'category': 'place',
+        'emotion': 'neutral',
+        'weight': 1,
+        'polarity': 0,
+        'en': {
+            'keywords': ['bed', 'bedroom', 'mattress', 'pillow', 'blanket'],
+            'meaning': 'rest, vulnerability, intimacy, unconscious transition',
+            'interpretation': 'A bed in dreams often points to rest, vulnerability, and the boundary between waking life and unconscious processing. It can highlight a need for safety, recovery, or emotional rest.'
+        }
+    },
+
+    'body': {
+        'category': 'body',
+        'emotion': 'neutral',
+        'weight': 1,
+        'polarity': 0,
+        'en': {
+            'keywords': ['body', 'physical body', 'limbs', 'hands', 'feet'],
+            'meaning': 'embodiment, physical limits, somatic awareness, personal boundaries',
+            'interpretation': 'The body in dreams represents how you are experiencing life physically and emotionally. Sensations of heaviness, immobility, or tension often reflect stress, vulnerability, or a disconnect between intention and action.'
+        }
+    },
+
+    'sound': {
+        'category': 'sensation',
+        'emotion': 'neutral',
+        'weight': 1,
+        'polarity': 0,
+        'en': {
+            'keywords': ['sound', 'noise', 'voice', 'silence', 'silent'],
+            'meaning': 'communication, alertness, unheard expression, subconscious signal',
+            'interpretation': 'Sound in dreams often relates to communication or the need to be heard. Silence or missing sound can point to suppressed expression, while unusual sounds can signal heightened awareness or a subconscious warning.'
+        }
+    },
+
+    'presence': {
+        'category': 'sensation',
+        'emotion': 'fear',
+        'weight': 2,
+        'polarity': -1,
+        'en': {
+            'keywords': ['presence', 'strange presence', 'unseen presence', 'someone watching', 'watching presence'],
+            'meaning': 'intuition, unseen pressure, shadow awareness, sensed observation',
+            'interpretation': 'A sensed presence in dreams often symbolizes intuition or the shadow side of the psyche. If it feels threatening, it can reflect hypervigilance, anxiety, or the feeling that something unresolved is near.'
+        }
+    },
+
+    'scream': {
+        'category': 'action',
+        'emotion': 'fear',
+        'weight': 2,
+        'polarity': -1,
+        'en': {
+            'keywords': ['scream', 'screaming', 'shout', 'shouting', 'cry out'],
+            'meaning': 'suppressed emotion, urgent need for expression, alarm',
+            'interpretation': 'Trying to scream in a dream often reflects emotions that want release but feel blocked in waking life. It can point to a need to be heard or to let out built-up fear.'
+        }
+    },
+
+    'wake': {
+        'category': 'transition',
+        'emotion': 'neutral',
+        'weight': 1,
+        'polarity': 0,
+        'en': {
+            'keywords': ['wake', 'woke', 'woken', 'awake', 'awakening'],
+            'meaning': 'return to awareness, realization, transition, integration',
+            'interpretation': 'Waking in a dream can symbolize a movement back into awareness or the mind restoring control after a stressful experience.'
+        }
+    },
+
+    'control': {
+        'category': 'agency',
+        'emotion': 'fear',
+        'weight': 2,
+        'polarity': -1,
+        'en': {
+            'keywords': ['control', 'regain control', 'lose control', 'in control'],
+            'meaning': 'agency, self-mastery, safety, fear of helplessness',
+            'interpretation': 'Control in dreams often reflects your sense of agency. Losing control points to anxiety, while regaining it suggests resilience and the psyche restoring balance.'
+        }
+    },
+
+    'increasing': {
+        'category': 'modifier',
+        'emotion': 'fear',
+        'weight': 2,
+        'polarity': -1,
+        'en': {
+            'keywords': ['increasing', 'increase', 'growing', 'escalating', 'intensifying'],
+            'meaning': 'escalation, mounting pressure, amplifying anxiety',
+            'interpretation': 'When something is increasing in a dream, the subconscious is signaling that the feeling or situation is escalating and requires attention.'
+        }
+    },
+
+    'watch': {
+        'category': 'attention',
+        'emotion': 'fear',
+        'weight': 1,
+        'polarity': -1,
+        'en': {
+            'keywords': ['watch', 'watching', 'observing', 'being watched', 'watcher'],
+            'meaning': 'vigilance, scrutiny, self-consciousness, threat detection',
+            'interpretation': 'Being watched in dreams can reflect hypervigilance, social pressure, or the feeling that a hidden issue is being noticed and judged.'
+        }
+    },
+
+    'strange': {
+        'category': 'quality',
+        'emotion': 'fear',
+        'weight': 1,
+        'polarity': -1,
+        'en': {
+            'keywords': ['strange', 'odd', 'weird', 'unfamiliar', 'uncanny'],
+            'meaning': 'uncertainty, unfamiliarity, disruption, subconscious alarm',
+            'interpretation': 'Strange details in dreams usually signal that the mind is moving into unfamiliar emotional territory or highlighting something that feels off.'
+        }
+    },
+
+    'regain': {
+        'category': 'transition',
+        'emotion': 'neutral',
+        'weight': 1,
+        'polarity': 0,
+        'en': {
+            'keywords': ['regain', 'regained', 'restore', 'recovered', 'recover'],
+            'meaning': 'recovery, restoration of agency, resilience',
+            'interpretation': 'Regaining something in a dream suggests the psyche is restoring balance, stability, or control after stress.'
+        }
+    },
     
     'fire': {
         'category': 'element',
@@ -895,8 +1027,13 @@ SYMBOL_CATEGORIES = {
     'life_event': ['death'],
     'action': ['chase'],
     'situation': ['exam', 'late'],
-    'body': ['teeth_falling'],
-    'place': ['house'],
+    'body': ['teeth_falling', 'body'],
+    'place': ['house', 'bed'],
+    'sensation': ['sound', 'presence'],
+    'transition': ['wake', 'regain'],
+    'agency': ['control'],
+    'attention': ['watch'],
+    'quality': ['strange'],
     'element': ['fire'],
     'emotion_literal': ['joy_literal', 'fear_literal'],
     'emotion_state': ['felt', 'powerless'],
@@ -909,12 +1046,12 @@ SYMBOL_CATEGORIES = {
 
 # Emotion-based symbol grouping
 EMOTION_SYMBOLS = {
-    'fear': ['falling', 'flood', 'spider', 'snake', 'darkness', 'chase', 'exam', 'teeth_falling', 'late', 'fear_literal', 'spreading', 'powerless', 'rapidly', 'intense'],
+    'fear': ['falling', 'flood', 'spider', 'snake', 'darkness', 'chase', 'exam', 'teeth_falling', 'late', 'fear_literal', 'spreading', 'powerless', 'rapidly', 'intense', 'presence', 'scream', 'control', 'increasing', 'watch', 'strange'],
     'joy': ['flying', 'bird', 'joy_literal'],
     'love': ['dog'],
     'sadness': ['rain', 'death'],
     'anger': ['fire'],
-    'neutral': ['ocean', 'river', 'cat', 'house', 'car', 'felt']
+    'neutral': ['ocean', 'river', 'cat', 'house', 'car', 'felt', 'bed', 'body', 'sound', 'wake', 'regain']
 }
 
 

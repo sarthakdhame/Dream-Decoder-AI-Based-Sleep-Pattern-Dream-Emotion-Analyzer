@@ -1924,13 +1924,19 @@ function renderJungianOutput(text, container) {
 
     // Split text into sections based on the numbered sections
     const sections = text.split(/\d\.\s+/);
-    const sectionNames = ["Symbols Meaning", "Archetypes Identified", "Emotional Insight", "Personal Growth Message"];
+    const sectionNames = [
+        "Symbols Meaning",
+        "Archetypes Identified",
+        "Emotional Insight",
+        "Personal Growth Message",
+        "Keyword Symbolic Meanings and Subconscious Insights"
+    ];
 
     let html = '';
 
     // Check if we have the expected number of sections (plus content before first section)
-    if (sections.length >= 5) {
-        for (let i = 0; i < 4; i++) {
+    if (sections.length >= 6) {
+        for (let i = 0; i < 5; i++) {
             const sectionContent = sections[i + 1] || "";
             const sectionName = sectionNames[i];
 
@@ -1942,6 +1948,18 @@ function renderJungianOutput(text, container) {
             `;
         }
     } else {
+    } else if (sections.length >= 5) {
+        for (let i = 0; i < Math.min(4, sections.length - 1); i++) {
+            const sectionContent = sections[i + 1] || "";
+            const sectionName = sectionNames[i];
+
+            html += `
+                    <div class="jungian-section" style="margin-bottom: 20px;">
+                        <h4 style="color: var(--color-foam); margin-bottom: 8px; border-bottom: 1px solid var(--color-bg-tertiary); padding-bottom: 4px;">${sectionName}</h4>
+                        <p style="color: var(--color-text-secondary); line-height: 1.6;">${escapeHtml(sectionContent.trim())}</p>
+                    </div>
+                `;
+        }
         // Fallback for different formats
         html = `<div class="jungian-raw-text" style="white-space: pre-wrap; color: var(--color-text-secondary);">${escapeHtml(text)}</div>`;
     }

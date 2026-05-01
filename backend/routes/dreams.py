@@ -25,6 +25,13 @@ def _fallback_analysis(content, user_language):
     """
     import re
     text_lower = content.lower()
+    phrase_candidates = [
+        'strange presence', 'being watched', 'regained control', 'lose control',
+        'could not move', "couldn't move", 'could not scream', "couldn't scream",
+        'woke up', 'wake up', 'no sound'
+    ]
+    matched_phrases = [phrase for phrase in phrase_candidates if phrase in text_lower]
+    phrase_tokens = {token for phrase in matched_phrases for token in phrase.split()}
     
     # Extended dream keyword vocabulary
     dream_keywords = [
@@ -32,7 +39,9 @@ def _fallback_analysis(content, user_language):
         'school', 'exam', 'test', 'monster', 'ghost', 'dark', 'house', 'car', 'crash',
         'family', 'friend', 'baby', 'animal', 'fire', 'snake', 'chase', 'fear', 'scared',
         'forest', 'mountain', 'ocean', 'sky', 'city', 'road', 'door', 'room', 'stairs',
-        'war', 'battle', 'fight', 'climb', 'swim', 'jump', 'fall', 'sleep', 'wake'
+        'war', 'battle', 'fight', 'climb', 'swim', 'jump', 'fall', 'sleep', 'wake',
+        'bed', 'body', 'sound', 'scream', 'presence', 'control', 'watch', 'increasing',
+        'regain', 'strange', 'move'
     ]
 
     # Single keyword extraction pass using weighted candidates.
@@ -42,9 +51,12 @@ def _fallback_analysis(content, user_language):
     keyword_scores = {}
 
     for word in words:
-        if len(word) >= 4 and word not in stop_words:
+        if len(word) >= 4 and word not in stop_words and word not in phrase_tokens:
             # Prioritize curated dream vocabulary and then frequency.
             keyword_scores[word] = keyword_scores.get(word, 0) + (3 if word in dream_keyword_set else 1)
+
+    for phrase in matched_phrases:
+        keyword_scores[phrase] = keyword_scores.get(phrase, 0) + 5
 
     ranked_keywords = sorted(keyword_scores.items(), key=lambda x: (-x[1], -len(x[0])))
     final_keywords = [word for word, _ in ranked_keywords[:8]]
@@ -58,7 +70,9 @@ def _fallback_analysis(content, user_language):
         'scary': 2, 'afraid': 2, 'terror': 3, 'dangerous': 2, 'death': 2, 'dying': 2, 'monster': 2,
         'ghost': 1, 'fear': 2, 'dark': 1, 'nightmare': 3, 'threat': 2, 'attack': 2, 'hurt': 2,
         'pain': 2, 'sad': 2, 'angry': 2, 'fail': 2, 'lost': 1, 'trapped': 2, 'chase': 1,
-        'running': 1, 'falling': 1, 'hurt': 2, 'bad': 1, 'wrong': 1, 'broken': 1
+        'running': 1, 'falling': 1, 'hurt': 2, 'bad': 1, 'wrong': 1, 'broken': 1,
+        'scream': 2, 'presence': 2, 'watch': 2, 'powerless': 3, 'control': 1,
+        'increasing': 1, 'strange': 1, 'wake': 1, 'paralyzed': 3, 'frozen': 2, 'immobile': 2
     }
     positive_words = {
         'happy': 2, 'joy': 3, 'love': 2, 'beautiful': 2, 'wonderful': 3, 'amazing': 3, 'flying': 1,
