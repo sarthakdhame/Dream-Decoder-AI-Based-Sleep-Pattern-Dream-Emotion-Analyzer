@@ -78,16 +78,22 @@ class Dream:
         """Save dream to database (insert or update)."""
         with get_db_connection() as conn:
             cursor = conn.cursor()
+
+            if isinstance(self.created_at, datetime):
+                self.created_at = self.created_at.replace(microsecond=0).isoformat(timespec='seconds')
+            elif self.created_at is None:
+                self.created_at = datetime.now().replace(microsecond=0).isoformat(timespec='seconds')
             
             if self.id is None:
                 # Insert new dream
                 cursor.execute('''
-                    INSERT INTO dreams (user_id, content, sentiment, sentiment_score, primary_emotion,
+                    INSERT INTO dreams (user_id, content, created_at, sentiment, sentiment_score, primary_emotion,
                                        emotion_scores, keywords, entities, interpretation, jungian_report)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     self.user_id,
                     self.content,
+                    self.created_at,
                     self.sentiment,
                     self.sentiment_score,
                     self.primary_emotion,

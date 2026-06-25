@@ -18,6 +18,22 @@ dreams_bp = Blueprint('dreams', __name__)
 sleep_analyzer = SleepAnalyzer()
 
 
+def _build_created_at(dream_date, dream_time):
+    """Build a local timestamp for dream saves."""
+    if dream_date and dream_time:
+        combined = f"{dream_date}T{dream_time}"
+        try:
+            dt = datetime.fromisoformat(combined)
+        except ValueError:
+            try:
+                dt = datetime.strptime(combined, '%Y-%m-%dT%H:%M')
+            except ValueError:
+                dt = datetime.now()
+        return dt.replace(microsecond=0).isoformat(timespec='seconds')
+
+    return datetime.now().replace(microsecond=0).isoformat(timespec='seconds')
+
+
 def _fallback_analysis(content, user_language):
     """
     Return smart basic analysis when ML models are unavailable.
@@ -465,6 +481,7 @@ def create_dream():
         dream = Dream(
             user_id=user.id,
             content=content,
+            created_at=_build_created_at(dream_date, dream_time),
             sentiment=analysis['sentiment'],
             sentiment_score=analysis['sentiment_score'],
             primary_emotion=analysis['primary_emotion'],

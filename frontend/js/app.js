@@ -1743,7 +1743,18 @@ function formatDate(dateStr) {
  */
 function formatDateTime(dateStr) {
     if (!dateStr) return '';
-    const date = new Date(dateStr);
+    const raw = String(dateStr).trim();
+    let normalized = raw;
+
+    if (!/[zZ]$|[+-]\d\d:\d\d$/.test(raw) && raw.includes(' ')) {
+        normalized = `${raw.replace(' ', 'T')}Z`;
+    }
+
+    const date = new Date(normalized);
+    if (Number.isNaN(date.getTime())) {
+        return raw;
+    }
+
     return date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
