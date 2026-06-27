@@ -66,6 +66,140 @@ POSITIVE_EMOTIONS = {'joy', 'love', 'surprise'}
 NEGATIVE_EMOTIONS = {'fear', 'sadness', 'anger'}
 FEAR_THEMES = {'fear', 'anxiety', 'chase', 'falling', 'flood', 'spider', 'snake', 'darkness', 'exam', 'teeth_falling', 'late'}
 
+
+PSYCHOLOGICAL_CONTEXT_RULES = [
+    {
+        'theme': 'career anxiety',
+        'emotion': 'pressure',
+        'triggers': ['job', 'career', 'office', 'work', 'promotion', 'deadline', 'interview', 'boss', 'performance', 'target', 'project'],
+        'conflict': 'pressure to prove yourself professionally',
+        'interpretation': 'The dream appears to carry career pressure rather than literal career content.',
+    },
+    {
+        'theme': 'fear of failure',
+        'emotion': 'self-doubt',
+        'triggers': ['fail', 'failing', 'failed', 'mistake', 'error', 'blank', 'missing answer', 'unable', 'cannot', 'could not', 'test', 'exam'],
+        'conflict': 'fear of not meeting your own standards',
+        'interpretation': 'A failure-sensitive state is showing up as hesitation, blankness, or blocked recall.',
+    },
+    {
+        'theme': 'fear of disappointing family',
+        'emotion': 'approval anxiety',
+        'triggers': ['parents', 'parent', 'mother', 'father', 'family', 'relatives', 'home', 'house'],
+        'context': ['watching', 'silent', 'silently', 'judging', 'expect', 'expectation', 'disappointed', 'approval'],
+        'conflict': 'fear of falling short of family expectations',
+        'interpretation': 'Family figures in the dream are likely carrying the emotional weight of expectation, not just their literal presence.',
+    },
+    {
+        'theme': 'responsibility pressure',
+        'emotion': 'burden',
+        'triggers': ['responsibility', 'duty', 'burden', 'rely', 'depending', 'need to', 'must', 'should', 'care for', 'support', 'provide'],
+        'conflict': 'feeling responsible for more than you can comfortably hold',
+        'interpretation': 'The dream suggests emotional load and duty are crowding out rest or ease.',
+    },
+    {
+        'theme': 'fear of wasted potential',
+        'emotion': 'regret',
+        'triggers': ['wasted time', 'too late', 'waste', 'potential', 'missed', 'lost time', 'years', 'clock', 'deadline', 'aging', 'late'],
+        'conflict': 'fear that time is slipping away before your potential is used',
+        'interpretation': 'Time symbols and urgency cues point to anxiety about what has not yet been achieved.',
+    },
+    {
+        'theme': 'identity conflict',
+        'emotion': 'identity strain',
+        'triggers': ['former', 'used to', 'old school', 'old college', 'trophy', 'award', 'rank', 'topper', 'high achiever', 'achievement', 'certificate'],
+        'context': ['no longer', 'again', 'past', 'remember', 'compare'],
+        'conflict': 'tension between your current self and a past high-achieving identity',
+        'interpretation': 'Old achievements are being read as a comparison point, not simply as praise.',
+    },
+    {
+        'theme': 'social comparison',
+        'emotion': 'comparison anxiety',
+        'triggers': ['others', 'everyone', 'classmate', 'peer', 'friends', 'ahead', 'behind', 'moving forward', 'left behind', 'compare', 'comparison'],
+        'conflict': 'fear of being measured against people who seem further ahead',
+        'interpretation': 'The dream is likely staging comparison pressure through other people moving and the dreamer feeling stuck.',
+    },
+    {
+        'theme': 'analysis paralysis',
+        'emotion': 'mental overload',
+        'triggers': ['blank screen', 'empty screen', 'blank page', 'missing answer', 'can not decide', 'cannot decide', 'stuck', 'frozen', 'overthinking', 'choice', 'options'],
+        'conflict': 'being mentally overloaded until action becomes difficult',
+        'interpretation': 'Empty screens or missing answers point to blocked processing rather than lack of intelligence.',
+    },
+    {
+        'theme': 'burnout and emotional exhaustion',
+        'emotion': 'exhaustion',
+        'triggers': ['exhausted', 'drained', 'tired', 'burnout', 'overwhelmed', 'cannot continue', 'too much', 'sleepy', 'empty', 'no energy'],
+        'conflict': 'having too little emotional fuel left to keep up the pace',
+        'interpretation': 'The dream reads like depletion, where even ordinary tasks feel heavy or slow.',
+    },
+    {
+        'theme': 'self-doubt despite capability',
+        'emotion': 'self-doubt',
+        'triggers': ['capable', 'able', 'good at', 'qualified', 'still doubt', 'not good enough', 'imposter', 'insecure', 'can do'],
+        'conflict': 'knowing you can do something while still doubting yourself',
+        'interpretation': 'Capability exists in the dream, but confidence is not catching up to it.',
+    },
+    {
+        'theme': 'procrastination and avoidance behavior',
+        'emotion': 'avoidance',
+        'triggers': ['scrolling', 'phone', 'distraction', 'avoid', 'delay', 'later', 'procrastinate', 'ignore', 'distracted'],
+        'conflict': 'using distraction to postpone an uncomfortable task or feeling',
+        'interpretation': 'Phone use or scrolling in the dream often signals emotional avoidance rather than casual behavior.',
+    },
+    {
+        'theme': 'loss of former high-achiever identity',
+        'emotion': 'identity grief',
+        'triggers': ['top student', 'first rank', 'topper', 'gold medal', 'award', 'achievement', 'brilliant', 'high achiever'],
+        'context': ['used to', 'past', 'former', 'not anymore', 'lost', 'again', 'behind'],
+        'conflict': 'grieving the distance between who you were praised as and who you feel like now',
+        'interpretation': 'The dream may be mourning a version of the self that once felt effortless and successful.',
+    },
+    {
+        'theme': 'internalized expectations',
+        'emotion': 'pressure',
+        'triggers': ['should', 'must', 'need to', 'have to', 'expected', 'expectation', 'perfect', 'perfection', 'standard', 'prove'],
+        'conflict': 'carrying expectations so deeply that they feel self-imposed',
+        'interpretation': 'The pressure may be coming from an internal voice as much as from other people.',
+    },
+    {
+        'theme': 'introversion-related isolation',
+        'emotion': 'isolation',
+        'triggers': ['alone', 'isolated', 'silent', 'quiet', 'cannot speak', 'invisible', 'left out', 'separated', 'crowd'],
+        'context': ['while others', 'everyone else', 'surrounded'],
+        'conflict': 'feeling emotionally present but socially disconnected',
+        'interpretation': 'The dream suggests quiet distance from others rather than simple loneliness.',
+    },
+]
+
+
+PSYCHOLOGICAL_TEMPLATES = {
+    'en': {
+        'intro': 'This dream is better read as an emotional pressure pattern than as a literal story.',
+        'bridge': 'The strongest signals point to {themes}.',
+        'family': 'Neutral or positive details such as family, school, work, or achievement are carrying the stress meaning in context.',
+        'conflict': 'Core conflict: {conflict}.',
+    },
+    'hi': {
+        'intro': 'यह सपना शाब्दिक कहानी से अधिक एक भावनात्मक दबाव-पैटर्न की तरह पढ़ा जाना चाहिए।',
+        'bridge': 'सबसे मजबूत संकेत {themes} की ओर इशारा करते हैं।',
+        'family': 'परिवार, स्कूल, काम या उपलब्धि जैसे तटस्थ/सकारात्मक विवरण संदर्भ में तनाव का अर्थ ले रहे हैं।',
+        'conflict': 'मुख्य संघर्ष: {conflict}.',
+    },
+    'mr': {
+        'intro': 'हे स्वप्न शब्दशः कथेपेक्षा भावनिक दडपणाच्या नमुन्यासारखे वाचावे.',
+        'bridge': 'सर्वात मजबूत संकेत {themes} कडे निर्देश करतात.',
+        'family': 'कुटुंब, शाळा, काम किंवा यश यांसारखे तटस्थ/सकारात्मक तपशील संदर्भात ताणाचा अर्थ धारण करत आहेत.',
+        'conflict': 'मुख्य संघर्ष: {conflict}.',
+    },
+    'hinglish': {
+        'intro': 'Ye dream literal story se zyada emotional pressure pattern ki tarah read hona chahiye.',
+        'bridge': 'Strongest signals {themes} ki taraf point karte hain.',
+        'family': 'Family, school, work, ya achievement jaise neutral/positive details context mein stress ka meaning carry kar rahe hain.',
+        'conflict': 'Core conflict: {conflict}.',
+    },
+}
+
 def interpret_dream(text, nlp_analysis, user_language='en'):
     """
     Generate a structured psychological interpretation with consistency checks.
@@ -216,6 +350,15 @@ def interpret_dream(text, nlp_analysis, user_language='en'):
     overall_interpretation = _generate_overall_interpretation(
         numbered_elements, final_emotion, final_sentiment, keywords, interpretation_lang
     )
+
+    psychological_context = _generate_psychological_context(
+        text,
+        keywords,
+        numbered_elements,
+        final_emotion,
+        final_sentiment,
+        interpretation_lang,
+    )
     
     # Generate final insight
     final_insight = _generate_final_insight(final_emotion, interpretation_lang)
@@ -223,6 +366,10 @@ def interpret_dream(text, nlp_analysis, user_language='en'):
     return {
         'numbered_elements': numbered_elements,
         'overall_interpretation': overall_interpretation,
+        'psychological_emotions': psychological_context['psychological_emotions'],
+        'psychological_themes': psychological_context['psychological_themes'],
+        'core_conflict': psychological_context['core_conflict'],
+        'psychological_interpretation': psychological_context['psychological_interpretation'],
         'final_insight': final_insight,
         'detected_language': detected_lang,
         'language_confidence': lang_conf,
@@ -301,3 +448,101 @@ def _generate_final_insight(emotion, lang_code):
         return templates['insight_sadness']
     else:
         return templates['insight_default']
+
+
+def _generate_psychological_context(text, keywords, elements, emotion, sentiment, lang_code):
+    """Detect psychologically meaningful dream themes without changing existing analysis outputs."""
+    text_lower = text.lower()
+    keyword_blob = " ".join((keywords or [])).lower()
+    element_blob = " ".join(e.get('element', '') for e in (elements or [])).lower()
+    combined_text = f"{text_lower} {keyword_blob} {element_blob}"
+
+    matches = []
+    for rule in PSYCHOLOGICAL_CONTEXT_RULES:
+        base_hits = sum(1 for trigger in rule.get('triggers', []) if trigger in combined_text)
+        if base_hits == 0:
+            continue
+
+        score = float(base_hits)
+        if any(ctx in combined_text for ctx in rule.get('context', [])):
+            score += 1.0
+
+        if rule['theme'] == 'fear of disappointing family' and any(family_term in combined_text for family_term in ['parents', 'parent', 'mother', 'father', 'family']) and any(watching_term in combined_text for watching_term in ['watching', 'silent', 'silently', 'judging', 'expect']):
+            score += 1.5
+
+        if rule['theme'] == 'social comparison' and any(move_term in combined_text for move_term in ['ahead', 'behind', 'left behind', 'moving forward', 'everyone else']):
+            score += 1.0
+
+        if rule['theme'] == 'analysis paralysis' and any(block_term in combined_text for block_term in ['blank', 'empty', 'missing answer', 'stuck', 'frozen']):
+            score += 1.0
+
+        if rule['theme'] == 'burnout and emotional exhaustion' and any(exhaust_term in combined_text for exhaust_term in ['tired', 'drained', 'overwhelmed', 'no energy', 'sleepy']):
+            score += 1.0
+
+        matches.append({
+            'theme': rule['theme'],
+            'emotion': rule['emotion'],
+            'conflict': rule['conflict'],
+            'interpretation': rule['interpretation'],
+            'score': score,
+        })
+
+    if not matches:
+        default_conflict = {
+            'en': 'the mind is processing pressure, uncertainty, or unresolved expectations',
+            'hi': 'मन दबाव, अनिश्चितता, या अधूरी अपेक्षाओं को संसाधित कर रहा है',
+            'mr': 'मन दडपण, अनिश्चितता किंवा अपूर्ण अपेक्षा प्रक्रिया करत आहे',
+            'hinglish': 'mind pressure, uncertainty, ya unresolved expectations process kar raha hai',
+        }
+        return {
+            'psychological_emotions': [emotion] if emotion else [],
+            'psychological_themes': [],
+            'core_conflict': default_conflict.get(lang_code, default_conflict['en']),
+            'psychological_interpretation': _fallback_psychological_interpretation(lang_code, emotion, sentiment),
+        }
+
+    matches.sort(key=lambda item: (item['score'], len(item['theme'])), reverse=True)
+    top_matches = matches[:4]
+
+    psychological_themes = [item['theme'] for item in top_matches]
+    psychological_emotions = []
+    for item in top_matches:
+        if item['emotion'] not in psychological_emotions:
+            psychological_emotions.append(item['emotion'])
+
+    strongest = top_matches[0]
+    templates = PSYCHOLOGICAL_TEMPLATES.get(lang_code, PSYCHOLOGICAL_TEMPLATES['en'])
+    theme_text = ", ".join(psychological_themes[:3])
+    interpretation_parts = [
+        templates['intro'],
+        templates['bridge'].format(themes=theme_text),
+        templates['family'],
+        templates['conflict'].format(conflict=strongest['conflict'])
+    ]
+
+    return {
+        'psychological_emotions': psychological_emotions,
+        'psychological_themes': psychological_themes,
+        'core_conflict': strongest['conflict'],
+        'psychological_interpretation': " ".join(part for part in interpretation_parts if part),
+    }
+
+
+def _fallback_psychological_interpretation(lang_code, emotion, sentiment):
+    templates = PSYCHOLOGICAL_TEMPLATES.get(lang_code, PSYCHOLOGICAL_TEMPLATES['en'])
+    if emotion in ['fear', 'sadness', 'anger'] or sentiment == 'negative':
+        conflict = {
+            'en': 'anxiety, pressure, or self-protection needs are driving the dream',
+            'hi': 'चिंता, दबाव, या आत्म-सुरक्षा की ज़रूरतें इस सपने को चला रही हैं',
+            'mr': 'चिंता, दडपण किंवा आत्म-संरक्षणाची गरज हे स्वप्न चालवत आहेत',
+            'hinglish': 'anxiety, pressure, ya self-protection needs is dream ko drive kar rahi hain',
+        }
+    else:
+        conflict = {
+            'en': 'the mind is organizing everyday pressure into a symbolic story',
+            'hi': 'मन रोज़मर्रा के दबाव को प्रतीकात्मक कहानी में व्यवस्थित कर रहा है',
+            'mr': 'मन रोजच्या दडपणाला प्रतीकात्मक कथेत मांडत आहे',
+            'hinglish': 'mind everyday pressure ko symbolic story mein organize kar raha hai',
+        }
+    conflict_text = conflict.get(lang_code, conflict['en'])
+    return f"{templates['intro']} {templates['conflict'].format(conflict=conflict_text)}"

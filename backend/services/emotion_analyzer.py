@@ -2,6 +2,7 @@
 Dream Decoder - Emotion Analyzer
 Uses HuggingFace transformers for emotion detection
 """
+import re
 from backend.config import EMOTION_MODEL
 
 # Global model instance (lazy loaded)
@@ -97,6 +98,20 @@ REINFORCEMENT_KEYWORDS = {
     ]
 }
 
+def _contains_reinforcement_keyword(text_lower, keyword):
+    """Match standalone words or exact phrases without substring false positives."""
+    if not keyword:
+        return False
+
+    keyword_lower = keyword.lower().strip()
+    if not keyword_lower:
+        return False
+
+    if ' ' in keyword_lower:
+        return keyword_lower in text_lower
+
+    pattern = rf'(?<!\w){re.escape(keyword_lower)}(?!\w)'
+    return re.search(pattern, text_lower) is not None
 
 def analyze_emotions(text):
     """
@@ -117,10 +132,10 @@ def analyze_emotions(text):
     
     # Fear/Horror Override
     fear_triggers = REINFORCEMENT_KEYWORDS['fear']
-    if any(f in text_lower for f in fear_triggers):
+    if any(_contains_reinforcement_keyword(text_lower, f) for f in fear_triggers):
         # Additional check for "chase" and "dark" logic
         horror_context = ['dark', 'night', 'chased', 'threat', 'monster', 'ghost']
-        if any(h in text_lower for h in horror_context) or sum(1 for f in fear_triggers if f in text_lower) >= 2:
+        if any(_contains_reinforcement_keyword(text_lower, h) for h in horror_context) or sum(1 for f in fear_triggers if _contains_reinforcement_keyword(text_lower, f)) >= 2:
             return {
                 'primary_emotion': 'fear',
                 'emotion_scores': {'fear': 0.95, 'joy': 0.0, 'neutral': 0.05},
@@ -130,11 +145,11 @@ def analyze_emotions(text):
 
     # Success/Joy Override
     joy_triggers = REINFORCEMENT_KEYWORDS['joy']
-    if any(j in text_lower for j in joy_triggers):
+    if any(_contains_reinforcement_keyword(text_lower, j) for j in joy_triggers):
         success_context = ['won', 'passed', 'award', 'happy', 'success', 'divine', 'peaceful']
-        if any(s in text_lower for s in success_context) or sum(1 for j in joy_triggers if j in text_lower) >= 2:
+        if any(_contains_reinforcement_keyword(text_lower, s) for s in success_context) or sum(1 for j in joy_triggers if _contains_reinforcement_keyword(text_lower, j)) >= 2:
              # Ensure no horror elements exist before forcing joy
-             if not any(f in text_lower for f in fear_triggers[:10]):
+             if not any(_contains_reinforcement_keyword(text_lower, f) for f in fear_triggers[:10]):
                 return {
                     'primary_emotion': 'joy',
                     'emotion_scores': {'joy': 0.95, 'fear': 0.0, 'neutral': 0.05},
@@ -163,7 +178,7 @@ def analyze_emotions(text):
             context_boosts = {'joy': 0, 'love': 0, 'fear': 0, 'sadness': 0}
             for emo, kw_list in REINFORCEMENT_KEYWORDS.items():
                 for kw in kw_list:
-                    if kw in text_lower:
+                    if _contains_reinforcement_keyword(text_lower, kw):
                         context_boosts[emo] += 0.2 # Significant boost
             
             # Apply boosts

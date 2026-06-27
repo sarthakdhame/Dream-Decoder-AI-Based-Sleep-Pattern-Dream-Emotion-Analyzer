@@ -1073,6 +1073,22 @@ def get_symbol_emotion(symbol_key):
     return symbol.get('emotion', 'neutral')
 
 
+def _matches_symbol_keyword(text_lower, candidate_lower):
+    """Match standalone words or exact phrases without substring false positives."""
+    if not text_lower or not candidate_lower:
+        return False
+
+    candidate_lower = candidate_lower.lower().strip()
+    if not candidate_lower:
+        return False
+
+    if ' ' in candidate_lower:
+        return candidate_lower in text_lower
+
+    import re
+    return re.search(rf'(?<!\w){re.escape(candidate_lower)}(?!\w)', text_lower) is not None
+
+
 def resolve_keyword_symbol(keyword, lang_code='en'):
     """Resolve a dream keyword to the closest matching symbolic meaning, if available."""
     if not keyword:
@@ -1100,7 +1116,7 @@ def resolve_keyword_symbol(keyword, lang_code='en'):
                     continue
 
                 exact_match = keyword_lower == candidate_lower
-                partial_match = keyword_lower in candidate_lower or candidate_lower in keyword_lower
+                partial_match = _matches_symbol_keyword(keyword_lower, candidate_lower) or _matches_symbol_keyword(candidate_lower, keyword_lower)
 
                 if exact_match or partial_match:
                     match_score = 2 if exact_match else 1
@@ -1151,7 +1167,7 @@ def find_symbols_in_text(text, lang_code='en'):
             keywords = lang_data.get('keywords', [])
             
             for keyword in keywords:
-                if keyword.lower() in text_lower:
+                if _matches_symbol_keyword(text_lower, keyword.lower()):
                     found_symbols.append({
                         'symbol': symbol_key,
                         'keyword': keyword,
