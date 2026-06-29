@@ -1559,6 +1559,57 @@ function showToast(type, message, duration = 4000) {
 
 const voiceBtn = document.getElementById('voice-btn');
 let recognition = null;
+let isVoiceRecognitionActive = false;
+let speechRecognitionFallbackAttempted = false;
+let shouldAutoRestartRecognition = false;
+
+function getPreferredSpeechLanguage() {
+    const browserLang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+    const pageLang = (document.documentElement.lang || '').toLowerCase();
+    const preferredLang = pageLang || browserLang;
+
+    if (preferredLang.startsWith('hi')) return 'hi-IN';
+    if (preferredLang.startsWith('mr')) return 'mr-IN';
+    if (preferredLang.startsWith('en')) return 'en-US';
+
+    return 'en-US';
+}
+
+function setVoiceButtonState(active) {
+    if (!voiceBtn) return;
+
+    if (active) {
+        voiceBtn.classList.add('recording');
+        voiceBtn.innerHTML = '<span class="voice-icon" title="Stop Mic">🛑</span>';
+        voiceBtn.title = 'Stop Mic';
+        return;
+    }
+
+    voiceBtn.classList.remove('recording');
+    voiceBtn.innerHTML = '<span class="voice-icon" title="Start Mic">🎤</span>';
+    voiceBtn.title = 'Start Mic';
+}
+
+function getSpeechRecognitionErrorMessage(error) {
+    switch (error) {
+        case 'not-allowed':
+            return 'Microphone permission is blocked. Allow microphone access in your browser settings and try again.';
+        case 'service-not-allowed':
+            return 'Speech recognition is blocked in this browser. Use Chrome or Edge over HTTPS/localhost.';
+        case 'audio-capture':
+            return 'No microphone was found. Check that a mic is connected and enabled.';
+        case 'network':
+            return 'Speech recognition could not reach the service. Check your internet connection.';
+        case 'language-not-supported':
+            return 'The selected speech language is not supported in your browser.';
+        case 'aborted':
+            return 'Microphone listening was stopped.';
+        case 'no-speech':
+            return 'No speech was detected. Try speaking a little louder or closer to the mic.';
+        default:
+            return `Speech recognition error: ${error}`;
+    }
+}
 
 if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1566,22 +1617,24 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
     recognition.continuous = true;
     recognition.interimResults = true;
 
-    // Set language to support Hinglish/Hindi/Marathi/English
-    recognition.lang = 'hi-IN';
-
-    let finalTranscript = '';
+    // Set the recognition language from the current locale, with Indian language fallbacks.
+    recognition.lang = getPreferredSpeechLanguage();
+    recognition.maxAlternatives = 1;
 
     recognition.onstart = () => {
-        voiceBtn.classList.add('recording');
-        voiceBtn.innerHTML = '<span class="voice-icon" title="Stop Mic">🛑</span>';
-        voiceBtn.title = 'Stop Mic';
+        isVoiceRecognitionActive = true;
+        shouldAutoRestartRecognition = true;
+        speechRecognitionFallbackAttempted = false;
+        setVoiceButtonState(true);
         showToast('info', 'Microphone active. Listening continuously...');
     };
 
     recognition.onend = () => {
+        isVoiceRecognitionActive = false;
+
         // Auto-restart if the button state still implies we should be recording
         // (This prevents the browser from stopping due to silence)
-        if (voiceBtn.classList.contains('recording')) {
+        if (shouldAutoRestartRecognition && voiceBtn && voiceBtn.classList.contains('recording')) {
             try {
                 recognition.start();
             } catch (err) {
@@ -1589,9 +1642,7 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             }
             return;
         }
-        voiceBtn.classList.remove('recording');
-        voiceBtn.innerHTML = '<span class="voice-icon" title="Start Mic">🎤</span>';
-        voiceBtn.title = 'Start Mic';
+        setVoiceButtonState(false);
     };
 
     recognition.onresult = (event) => {
@@ -1621,24 +1672,65 @@ if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
 
     recognition.onerror = (event) => {
         if (event.error === 'no-speech') return; // Ignore silence errors
+
         console.error('Speech recognition error:', event.error);
-        showToast('error', `Speech recognition error: ${event.error}`);
+        isVoiceRecognitionActive = false;
+
+        if (event.error === 'network' || event.error === 'service-not-allowed' || event.error === 'not-allowed' || event.error === 'audio-capture') {
+            shouldAutoRestartRecognition = false;
+        }
+
+        if (!speechRecognitionFallbackAttempted && (event.error === 'network' || event.error === 'language-not-supported') && recognition.lang !== 'en-US') {
+            speechRecognitionFallbackAttempted = true;
+            recognition.lang = 'en-US';
+            shouldAutoRestartRecognition = true;
+
+            try {
+                showToast('info', 'Retrying voice recognition with English (US)...');
+                recognition.start();
+                return;
+            } catch (retryError) {
+                console.error('Speech recognition fallback failed:', retryError);
+            }
+        }
+
+        if (voiceBtn) {
+            setVoiceButtonState(false);
+        }
+
+        showToast('error', getSpeechRecognitionErrorMessage(event.error));
     };
 }
 
 if (voiceBtn) {
-    voiceBtn.title = 'Start Mic'; // Initial title
+    setVoiceButtonState(false);
     voiceBtn.addEventListener('click', () => {
         if (!recognition) {
             showToast('warning', 'Speech recognition is not supported in your browser.');
             return;
         }
 
-        if (voiceBtn.classList.contains('recording')) {
-            voiceBtn.classList.remove('recording'); // Remove class first so onend doesn't restart
+        if (isVoiceRecognitionActive || voiceBtn.classList.contains('recording')) {
+            shouldAutoRestartRecognition = false;
+            setVoiceButtonState(false);
             recognition.stop();
-        } else {
+            return;
+        }
+
+        if (!window.isSecureContext) {
+            showToast('error', 'Voice input requires a secure origin. Open the app on localhost or HTTPS.');
+            return;
+        }
+
+        try {
+            recognition.lang = getPreferredSpeechLanguage();
+            shouldAutoRestartRecognition = true;
             recognition.start();
+        } catch (error) {
+            console.error('Speech recognition start failed:', error);
+            setVoiceButtonState(false);
+            shouldAutoRestartRecognition = false;
+            showToast('error', 'Could not start speech recognition. Try again in Chrome or Edge on localhost/HTTPS.');
         }
     });
 }
